@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/l10n/l10n.dart';
+import '../../../core/router/app_router.dart';
 import '../../../core/storage/app_database.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/empty_state.dart';
@@ -124,6 +125,17 @@ class _DocumentScreenState extends ConsumerState<DocumentScreen> {
               padding: const EdgeInsets.only(bottom: 4),
               child: Text(l10n.pageEditTitle(_current + 1, pages.length), style: theme.textTheme.bodyMedium),
             ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
+            child: SizedBox(
+              width: double.infinity,
+              child: FilledButton.tonalIcon(
+                onPressed: pages.isEmpty ? null : () => context.push(Routes.ocrPath(doc.id)),
+                icon: const Icon(Icons.text_snippet_outlined),
+                label: Text(l10n.extractText),
+              ),
+            ),
+          ),
         ],
       ),
       bottomNavigationBar: SafeArea(
