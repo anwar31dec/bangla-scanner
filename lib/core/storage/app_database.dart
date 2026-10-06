@@ -56,6 +56,8 @@ class AppDatabase extends _$AppDatabase {
             DocumentSort.nameAz => OrderingTerm.asc(d.name.collate(Collate.noCase)),
             DocumentSort.nameZa => OrderingTerm.desc(d.name.collate(Collate.noCase)),
           },
+      // Timestamps have one-second precision; insertion order breaks ties.
+      (d) => sort == DocumentSort.oldest ? OrderingTerm.asc(d.rowId) : OrderingTerm.desc(d.rowId),
     ]);
     if (limit != null) query.limit(limit);
     return query.watch();
