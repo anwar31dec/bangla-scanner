@@ -60,7 +60,7 @@ class HomeScreen extends ConsumerWidget {
                       child: HomeActionTile(
                         icon: Icons.badge_outlined,
                         label: l10n.homeIdCard,
-                        onPressed: () {},
+                        onPressed: () => context.push(Routes.idCard),
                       ),
                     ),
                   ],
