@@ -58,21 +58,72 @@ class ImageProcessing {
       case PageFilter.original:
         return src;
       case PageFilter.autoColor:
-        return cleanDocument(src, saturation: 1.15);
+        return whitenEdges(cleanDocument(src, saturation: 1.15));
       case PageFilter.grayscale:
-        return cleanDocument(src, gray: true);
+        return whitenEdges(cleanDocument(src, gray: true));
       case PageFilter.blackWhite:
-        return adaptiveThreshold(src);
+        return whitenEdges(adaptiveThreshold(src));
       case PageFilter.whiteboard:
         // Boards are grey and glossy: clip harder at both ends and make the
         // marker colours pop.
-        return cleanDocument(src, whitePoint: 0.82, blackPoint: 0.25, saturation: 1.6);
+        return whitenEdges(cleanDocument(src, whitePoint: 0.82, blackPoint: 0.25, saturation: 1.6));
       case PageFilter.lightText:
         // The gamma darkens faint strokes (pencil, weak print) without
         // touching the paper.
-        return cleanDocument(src, gray: true, blackPoint: 0, gamma: 2.2);
+        return whitenEdges(cleanDocument(src, gray: true, blackPoint: 0, gamma: 2.2));
     }
   }
+
+  /// Whitens, in place, the thin dark strip a crop leaves along the page
+  /// edges (a sliver of table or shadow beside the paper), which the filters
+  /// keep as if it were ink.
+  ///
+  /// Every edge pixel is followed inwards: whatever lies between the edge
+  /// and the first stretch of white paper is erased. If no paper turns up
+  /// within the strip depth, the pixels are left alone, so a coloured page,
+  /// a photo or a ruled line running off the page stay as they are.
+  static img.Image whitenEdges(img.Image image) {
+    final w = image.width, h = image.height;
+    final depth = math.max(w, h) ~/ _edgeStripFraction;
+    // White pixels in a row that count as paper; a single one may be noise
+    // inside the strip.
+    final gap = math.max(2, depth ~/ 4);
+    if (depth < 1 || math.min(w, h) <= depth + gap) return image;
+    if (image.numChannels != 3 || image.hasPalette || image.format != img.Format.uint8) return image;
+    final px = image.toUint8List();
+
+    void side(int length, int Function(int along, int inwards) offset) {
+      for (var i = 0; i < length; i++) {
+        var white = 0, end = -1;
+        for (var d = 0; d < depth + gap; d++) {
+          final j = offset(i, d);
+          if (px[j] < _paperWhite || px[j + 1] < _paperWhite || px[j + 2] < _paperWhite) {
+            white = 0;
+          } else if (++white == gap) {
+            end = d - gap + 1;
+            break;
+          }
+        }
+        for (var d = 0; d < end; d++) {
+          final j = offset(i, d);
+          px[j] = 255;
+          px[j + 1] = 255;
+          px[j + 2] = 255;
+        }
+      }
+    }
+
+    side(w, (x, d) => (d * w + x) * 3);
+    side(w, (x, d) => ((h - 1 - d) * w + x) * 3);
+    side(h, (y, d) => (y * w + d) * 3);
+    side(h, (y, d) => (y * w + w - 1 - d) * 3);
+    return image;
+  }
+
+  /// The edge strip is at most 1/120 of the longest edge deep (2.5 mm on A4);
+  /// a slightly crooked crop leaves a wedge that reaches about that far.
+  static const _edgeStripFraction = 120;
+  static const _paperWhite = 245;
 
   /// Full page pipeline used when saving: decode → rotate → filter → resize
   /// → JPEG.

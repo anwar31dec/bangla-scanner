@@ -66,7 +66,8 @@ void main() {
       // From the lit side into the shadow (30% darker). Further right the
       // fixture's text underflows and is no longer dark.
       for (final x in [60, 250, 440]) {
-        final paper = out.getPixel(x, 30), text = out.getPixel(x, 3);
+        // The second line of text: the first touches the top edge.
+        final paper = out.getPixel(x, 30), text = out.getPixel(x, 43);
         expect([paper.r, paper.g, paper.b], everyElement(greaterThan(245)), reason: 'paper at x=$x');
         expect(text.r, lessThan(100), reason: 'text at x=$x');
       }
@@ -78,6 +79,46 @@ void main() {
         final out = ImageProcessing.applyFilter(src, f);
         expect([out.width, out.height], [90, 70], reason: f.name);
       }
+    });
+
+    group('whitenEdges', () {
+      img.Image page({int r = 255, int g = 255, int b = 255}) =>
+          img.fill(img.Image(width: 400, height: 600), color: img.ColorRgb8(r, g, b));
+      void paint(img.Image image, int x0, int y0, int x1, int y1, int v) {
+        for (var y = y0; y < y1; y++) {
+          for (var x = x0; x < x1; x++) {
+            image.setPixelRgb(x, y, v, v, v);
+          }
+        }
+      }
+
+      test('erases the strip a crop leaves along the edges', () {
+        final image = page();
+        paint(image, 0, 0, 400, 2, 180); // top
+        paint(image, 0, 0, 2, 600, 200); // left
+        paint(image, 398, 0, 400, 600, 90); // right
+        paint(image, 0, 598, 400, 600, 0); // bottom
+        ImageProcessing.whitenEdges(image);
+        expect(image.every((p) => p.r == 255 && p.g == 255 && p.b == 255), isTrue);
+      });
+
+      test('keeps content that is not part of the strip', () {
+        final image = page();
+        paint(image, 0, 0, 400, 2, 180); // strip
+        paint(image, 0, 300, 400, 302, 0); // ruled line running off both sides
+        paint(image, 100, 5, 110, 15, 0); // mark close to the edge
+        ImageProcessing.whitenEdges(image);
+        expect(image.getPixel(200, 0).r, 255);
+        expect(image.getPixel(0, 300).r, 0);
+        expect(image.getPixel(399, 301).r, 0);
+        expect(image.getPixel(105, 5).r, 0);
+      });
+
+      test('leaves a page without white paper alone', () {
+        final image = page(r: 250, g: 240, b: 200);
+        ImageProcessing.whitenEdges(image);
+        expect(image.every((p) => p.r == 250 && p.g == 240 && p.b == 200), isTrue);
+      });
     });
 
     test('processPage respects quality size limit and returns JPEG', () {
