@@ -83,6 +83,13 @@ class ImageProcessing {
     return img.encodeJpg(image, quality: quality.jpegQuality);
   }
 
+  /// Bakes a rotation into a high quality JPEG (used before manual crop so
+  /// the cropper shows the page the way the user sees it).
+  static Uint8List rotateJpeg(Uint8List bytes, int quarterTurns) {
+    final image = rotateQuarterTurns(decode(bytes), quarterTurns);
+    return img.encodeJpg(image, quality: 95);
+  }
+
   /// Small JPEG used as a list thumbnail.
   static Uint8List thumbnail(Uint8List bytes, {int maxEdge = 360}) {
     final image = limitSize(decode(bytes), maxEdge);

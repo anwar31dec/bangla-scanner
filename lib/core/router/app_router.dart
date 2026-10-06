@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../features/editor/presentation/editor_screen.dart';
+import '../../features/editor/presentation/page_edit_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
 import '../../features/library/presentation/document_screen.dart';
 import '../../features/settings/presentation/settings_screen.dart';
@@ -23,7 +24,17 @@ final routerProvider = Provider<GoRouter>((ref) {
     routes: [
       GoRoute(path: Routes.home, builder: (context, state) => const HomeScreen()),
       GoRoute(path: Routes.settings, builder: (context, state) => const SettingsScreen()),
-      GoRoute(path: Routes.editor, builder: (context, state) => const EditorScreen()),
+      GoRoute(
+        path: Routes.editor,
+        builder: (context, state) => const EditorScreen(),
+        routes: [
+          GoRoute(
+            path: 'page/:index',
+            builder: (context, state) =>
+                PageEditScreen(initialIndex: int.tryParse(state.pathParameters['index'] ?? '') ?? 0),
+          ),
+        ],
+      ),
       GoRoute(
         path: Routes.document,
         builder: (context, state) => DocumentScreen(documentId: state.pathParameters['id']!),
