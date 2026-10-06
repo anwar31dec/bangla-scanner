@@ -18,7 +18,7 @@ without an internet connection.
 | Import from gallery | `image_picker` (multi-select) |
 | Edit pages | Crop (`image_cropper`), rotate, drag-and-drop reorder, delete, add more pages |
 | Filters | Original, Auto color (white paper, shadows removed), Grayscale, Black & White (adaptive threshold), Whiteboard, Light text. Picked from live thumbnails of the page |
-| Save | PDF (A4, `pdf` package) or JPEG; quality Low / Medium / High; default name `Scan dd-MM-yyyy` |
+| Save | PDF (page fits the scan: A4, Legal, …; `pdf` package) or JPEG; quality Low / Medium / High; default name `Scan dd-MM-yyyy` |
 | Library | Thumbnail, name, pages, date, size; search, sort, rename, delete; metadata in drift |
 | Share / save copy | `share_plus`; Downloads/Bangla Scanner on Android, Files picker on iOS |
 | OCR | Bangla: Tesseract `ben`; English: ML Kit; Both: Tesseract `ben+eng`; editable result, copy/share/.txt |

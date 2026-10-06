@@ -6,6 +6,7 @@ import 'package:banglascanner/features/export/data/image_processing.dart';
 import 'package:banglascanner/features/export/data/pdf_builder.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:image/image.dart' as img;
+import 'package:pdf/pdf.dart';
 
 import '../helpers.dart';
 
@@ -89,7 +90,7 @@ void main() {
   });
 
   group('PdfBuilder', () {
-    test('creates one A4 page per image', () async {
+    test('creates one page per image', () async {
       final page = ImageProcessing.processPage(
         fakeDocumentJpeg(),
         quarterTurns: 0,
@@ -100,8 +101,25 @@ void main() {
       expect(String.fromCharCodes(pdf.take(5)), '%PDF-');
       final text = String.fromCharCodes(pdf);
       expect(RegExp(r'/Type\s*/Page[^s]').allMatches(text).length, 3);
-      // A4 portrait in points.
+      // A4 width in points; the 600 × 800 image makes the page 4:3.
       expect(text, contains('595.27'));
+      expect(text, contains('793.7'));
+    });
+
+    test('pages take the shape of the scan', () {
+      const a4 = PdfPageFormat.a4;
+      // A4 at 300 dpi stays A4.
+      final portrait = PdfBuilder.pageFormatFor(2480, 3508);
+      expect(portrait.width, a4.width);
+      expect(portrait.height, closeTo(a4.height, 0.5));
+      // Legal paper: same width, longer page.
+      final legal = PdfBuilder.pageFormatFor(2199, 3508);
+      expect(legal.width, a4.width);
+      expect(legal.height / legal.width, closeTo(3508 / 2199, 1e-9));
+      // Landscape keeps the short side on the height.
+      final landscape = PdfBuilder.pageFormatFor(3508, 2199);
+      expect(landscape.height, a4.width);
+      expect(landscape.width, closeTo(legal.height, 1e-9));
     });
   });
 }
