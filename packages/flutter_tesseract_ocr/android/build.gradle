@@ -1,0 +1,38 @@
+// Bangla Scanner patch: modernised for Gradle 9 / AGP 9 (the upstream file used
+// jcenter() and an AGP 7 buildscript classpath, both of which break new builds).
+group 'io.paratoner.flutter_tesseract_ocr'
+version '1.0'
+
+// The Tesseract native library ships as a local AAR. A flatDir repository is
+// added to every project so the app module can resolve it transitively.
+rootProject.allprojects {
+    repositories {
+        flatDir {
+            dirs project(':flutter_tesseract_ocr').file('libs')
+        }
+    }
+}
+
+apply plugin: 'com.android.library'
+
+android {
+    namespace "io.paratoner.flutter_tesseract_ocr"
+    compileSdk 36
+
+    defaultConfig {
+        minSdk 21
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    lint {
+        disable 'InvalidPackage'
+    }
+}
+
+dependencies {
+    api(name: 'tesseract4android-release', ext: 'aar')
+}
