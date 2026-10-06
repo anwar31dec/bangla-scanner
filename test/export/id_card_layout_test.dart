@@ -15,6 +15,26 @@ void main() {
     expect([page.width, page.height], [2480, 3508]);
   });
 
+  test('a flipped side is placed turned by 180°', () {
+    // Left half red, right half blue.
+    final card = img.Image(width: 856, height: 540);
+    img.fillRect(card, x1: 0, y1: 0, x2: 427, y2: 539, color: img.ColorRgb8(200, 0, 0));
+    img.fillRect(card, x1: 428, y1: 0, x2: 855, y2: 539, color: img.ColorRgb8(0, 0, 200));
+    final side = img.encodeJpg(card);
+
+    final page = img.decodeJpg(IdCardLayout.compose(side, side, flipBack: true))!;
+    final cardW = IdCardLayout.mmToPx(IdCardLayout.cardWidthMm);
+    final cardH = IdCardLayout.mmToPx(IdCardLayout.cardHeightMm);
+    final gap = IdCardLayout.mmToPx(IdCardLayout.gapMm);
+    final left = (page.width - cardW) ~/ 2;
+    final top = (page.height - (cardH * 2 + gap)) ~/ 2;
+
+    final frontLeft = page.getPixel(left + cardW ~/ 4, top + cardH ~/ 2);
+    final backLeft = page.getPixel(left + cardW ~/ 4, top + cardH + gap + cardH ~/ 2);
+    expect(frontLeft.r > 150 && frontLeft.b < 60, isTrue, reason: 'front keeps red on the left');
+    expect(backLeft.b > 150 && backLeft.r < 60, isTrue, reason: 'flipped back has blue on the left');
+  });
+
   test('composes both sides centred on an A4 page at 300 dpi', () {
     img.Image solid(int r, int g, int b) => img.fill(img.Image(width: 856, height: 540), color: img.ColorRgb8(r, g, b));
     final front = img.encodeJpg(solid(200, 0, 0));

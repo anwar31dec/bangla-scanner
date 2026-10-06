@@ -30,11 +30,17 @@ class IdCardLayout {
   /// Call this instead of wrapping [compose] in `Isolate.run` inside a
   /// widget: a closure created there also carries the widget's State, which
   /// cannot be sent to another isolate.
-  static Future<Uint8List> composeInBackground(Uint8List front, Uint8List back) =>
-      Isolate.run(() => compose(front, back));
+  static Future<Uint8List> composeInBackground(
+    Uint8List front,
+    Uint8List back, {
+    bool flipFront = false,
+    bool flipBack = false,
+  }) =>
+      Isolate.run(() => compose(front, back, flipFront: flipFront, flipBack: flipBack));
 
-  /// Returns a high quality JPEG of the A4 page.
-  static Uint8List compose(Uint8List front, Uint8List back) {
+  /// Returns a high quality JPEG of the A4 page. [flipFront] / [flipBack]
+  /// turn a side by 180° (for a card that was photographed upside down).
+  static Uint8List compose(Uint8List front, Uint8List back, {bool flipFront = false, bool flipBack = false}) {
     final pageW = mmToPx(a4WidthMm), pageH = mmToPx(a4HeightMm);
     final cardW = mmToPx(cardWidthMm), cardH = mmToPx(cardHeightMm);
     final gap = mmToPx(gapMm);
@@ -46,8 +52,10 @@ class IdCardLayout {
     final top = (pageH - (cardH * 2 + gap)) ~/ 2;
 
     final sides = [front, back];
+    final flipped = [flipFront, flipBack];
     for (var i = 0; i < sides.length; i++) {
-      final card = fitCard(ImageProcessing.decode(sides[i]), cardW, cardH);
+      var card = fitCard(ImageProcessing.decode(sides[i]), cardW, cardH);
+      if (flipped[i]) card = ImageProcessing.rotateQuarterTurns(card, 2);
       final y = top + i * (cardH + gap);
       img.compositeImage(page, card, dstX: left, dstY: y);
       // Thin light outline makes the card easy to cut out after printing.

@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:isolate';
 
 import 'package:banglascanner/core/models/enums.dart';
 import 'package:banglascanner/core/storage/app_database.dart';
@@ -64,6 +65,21 @@ void main() {
     expect(await repo.thumbnailOf(doc).exists(), isTrue);
     expect((await repo.pagesOf(doc)).length, 3);
     expect(await repo.isIntact(doc), isTrue);
+  });
+
+  test('saves when the progress callback holds something unsendable', () async {
+    // Screens pass a callback that captures their State, which cannot be
+    // sent to an isolate; it must never end up in the isolate message.
+    final unsendable = ReceivePort();
+    addTearDown(unsendable.close);
+    final doc = await service.save(
+      draft: await draftWith(2),
+      name: 'Scan',
+      format: SaveFormat.pdf,
+      quality: ExportQuality.low,
+      onProgress: (_, _) => unsendable.hashCode,
+    );
+    expect(doc.pageCount, 2);
   });
 
   test('JPEG documents report the total size of their pages', () async {

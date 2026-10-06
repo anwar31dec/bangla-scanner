@@ -31,6 +31,10 @@ class _IdCardScreenState extends ConsumerState<IdCardScreen> {
   Directory? _workDir;
   String? _front;
   String? _back;
+
+  /// A side photographed upside down is shown and printed turned by 180°.
+  bool _frontFlipped = false;
+  bool _backFlipped = false;
   bool _busy = false;
   String? _progressText;
 
@@ -63,7 +67,15 @@ class _IdCardScreenState extends ConsumerState<IdCardScreen> {
       final dir = await _ensureWorkDir();
       final target = p.join(dir.path, '${back ? 'back' : 'front'}_${DateTime.now().microsecondsSinceEpoch}.jpg');
       await File(paths.first).copy(target);
-      setState(() => back ? _back = target : _front = target);
+      setState(() {
+        if (back) {
+          _back = target;
+          _backFlipped = false;
+        } else {
+          _front = target;
+          _frontFlipped = false;
+        }
+      });
     } catch (e) {
       if (mounted) showError(context, e);
     }
@@ -85,7 +97,12 @@ class _IdCardScreenState extends ConsumerState<IdCardScreen> {
       final dir = await _ensureWorkDir();
       final frontBytes = await File(front).readAsBytes();
       final backBytes = await File(back).readAsBytes();
-      final pageBytes = await IdCardLayout.composeInBackground(frontBytes, backBytes);
+      final pageBytes = await IdCardLayout.composeInBackground(
+        frontBytes,
+        backBytes,
+        flipFront: _frontFlipped,
+        flipBack: _backFlipped,
+      );
       final pagePath = p.join(dir.path, 'a4_page.jpg');
       await File(pagePath).writeAsBytes(pageBytes, flush: true);
 
@@ -134,7 +151,9 @@ class _IdCardScreenState extends ConsumerState<IdCardScreen> {
               _CardSlot(
                 label: l10n.idCardFront,
                 imagePath: _front,
+                flipped: _frontFlipped,
                 active: step == 0,
+                onFlip: () => setState(() => _frontFlipped = !_frontFlipped),
                 onScan: () => _capture(back: false, fromGallery: false),
                 onGallery: () => _capture(back: false, fromGallery: true),
               ),
@@ -142,7 +161,9 @@ class _IdCardScreenState extends ConsumerState<IdCardScreen> {
               _CardSlot(
                 label: l10n.idCardBack,
                 imagePath: _back,
+                flipped: _backFlipped,
                 active: step == 1,
+                onFlip: () => setState(() => _backFlipped = !_backFlipped),
                 enabled: _front != null,
                 onScan: () => _capture(back: true, fromGallery: false),
                 onGallery: () => _capture(back: true, fromGallery: true),
@@ -202,7 +223,9 @@ class _CardSlot extends StatelessWidget {
   const _CardSlot({
     required this.label,
     required this.imagePath,
+    required this.flipped,
     required this.active,
+    required this.onFlip,
     required this.onScan,
     required this.onGallery,
     this.enabled = true,
@@ -210,8 +233,10 @@ class _CardSlot extends StatelessWidget {
 
   final String label;
   final String? imagePath;
+  final bool flipped;
   final bool active;
   final bool enabled;
+  final VoidCallback onFlip;
   final VoidCallback onScan;
   final VoidCallback onGallery;
 
@@ -242,7 +267,26 @@ class _CardSlot extends StatelessWidget {
                 child: ColoredBox(
                   color: scheme.surfaceContainerHighest,
                   child: hasImage
-                      ? Image.file(File(imagePath!), fit: BoxFit.cover)
+                      ? Stack(
+                          fit: StackFit.expand,
+                          children: [
+                            RotatedBox(
+                              quarterTurns: flipped ? 2 : 0,
+                              child: Image.file(File(imagePath!), fit: BoxFit.cover),
+                            ),
+                            Align(
+                              alignment: Alignment.topRight,
+                              child: Padding(
+                                padding: const EdgeInsets.all(4),
+                                child: IconButton.filledTonal(
+                                  onPressed: onFlip,
+                                  tooltip: l10n.rotate,
+                                  icon: const Icon(Icons.rotate_right),
+                                ),
+                              ),
+                            ),
+                          ],
+                        )
                       : Icon(Icons.badge_outlined, size: 56, color: scheme.outline),
                 ),
               ),
