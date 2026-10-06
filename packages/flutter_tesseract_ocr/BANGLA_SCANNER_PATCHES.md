@@ -6,7 +6,8 @@ current Flutter toolchain:
 
 - `android/build.gradle`: removed the AGP 7 `buildscript` block and
   `jcenter()` (removed in Gradle 9), replaced `lintOptions` with `lint`,
-  set Java 17.
+  set Java 17, added R8 keep rules (`proguard-rules.pro`) for the JNI
+  classes so release builds don't break OCR.
 - Android plugin: recycles the previous engine, reports init/OCR failures as
   `PlatformException` instead of crashing or hanging.
 - iOS plugin: reads traineddata from `<Documents>/tessdata` (populated by the

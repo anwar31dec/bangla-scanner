@@ -118,7 +118,16 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
       await ref.read(draftProvider.notifier).discard();
       if (!mounted) return;
       showSnack(context, l10n.saved);
-      context.pushReplacement(Routes.documentPath(doc.id));
+      if (draft.existingDocumentId != null) {
+        // The document's files were rewritten under the same paths; drop
+        // cached thumbnails/pages so the new version is shown.
+        PaintingBinding.instance.imageCache
+          ..clear()
+          ..clearLiveImages();
+        context.pop();
+      } else {
+        context.pushReplacement(Routes.documentPath(doc.id));
+      }
     } catch (e) {
       if (mounted) showError(context, e);
     } finally {
