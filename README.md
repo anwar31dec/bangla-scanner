@@ -79,8 +79,13 @@ dart run build_runner build --delete-conflicting-outputs
 ### Android
 
 ```bash
-flutter run              # with a device or emulator connected
+flutter run --flavor dev   # with a device or emulator connected
 ```
+
+Android has two flavors that install side by side: `dev`
+(`com.codeinherit.banglascanner.dev`, label "DEV Bangla Scanner", DEV-badged
+icon) and `prod` (`com.codeinherit.banglascanner`). Every Android `flutter run`
+/ `flutter build` needs `--flavor dev` or `--flavor prod`.
 
 - `minSdk` is 24: the Flutter engine and several plugins require it.
 - Permissions (`android/app/src/main/AndroidManifest.xml`): `CAMERA`, and
@@ -158,28 +163,61 @@ models from the documents folder on iOS instead of the read-only bundle.
 
 1. Create a keystore (once):
    ```bash
-   keytool -genkey -v -keystore ~/banglascanner-upload.jks -keyalg RSA \
-     -keysize 2048 -validity 10000 -alias upload
+   keytool -genkeypair -v -keystore android/app/bangla-scanner-release.jks \
+     -storetype PKCS12 -keyalg RSA -keysize 2048 -validity 10000 -alias banglascanner
    ```
-2. Create `android/key.properties` (do not commit it):
+2. Create `android/key.properties` (git-ignored, like the keystore):
    ```properties
+   storeFile=bangla-scanner-release.jks
    storePassword=...
+   keyAlias=banglascanner
    keyPassword=...
-   keyAlias=upload
-   storeFile=/home/you/banglascanner-upload.jks
    ```
-   `android/app/build.gradle.kts` picks it up automatically; without it,
-   release builds are signed with the debug key (fine for testing only).
+   `android/app/build.gradle.kts` picks it up automatically and signs debug
+   builds with the same key, so a local run and a tester build of the same
+   flavor replace each other. Without it, every build is signed with the debug
+   key (fine for testing only). Back up both files: with a different key,
+   testers must uninstall before they can update.
 3. Build:
    ```bash
-   flutter build appbundle --release            # for Google Play (.aab)
-   flutter build apk --release --split-per-abi  # smaller APKs per CPU type
+   flutter build appbundle --release --flavor prod            # for Google Play (.aab)
+   flutter build apk --release --flavor prod --split-per-abi  # smaller APKs per CPU type
    ```
-   Outputs: `build/app/outputs/bundle/release/app-release.aab` and
-   `build/app/outputs/flutter-apk/app-*-release.apk`.
+   Outputs: `build/app/outputs/bundle/prodRelease/app-prod-release.aab` and
+   `build/app/outputs/flutter-apk/app-*-prod-release.apk`.
 
 Tesseract ships native libraries for four ABIs (~8 MB each); the App Bundle
 or `--split-per-abi` makes each user download only one.
+
+### Tester builds (Firebase App Distribution)
+
+```bash
+./release_script.sh dev    # bump version, test, build the dev APK, upload to testers
+./release_script.sh prod   # same for the prod flavor
+```
+
+The script bumps the patch version in `pubspec.yaml` on every run (`prod` also
+bumps the build number; `dev` uses its own counter in `dev_build_number.txt`),
+keeps a stamped copy of each APK in `build/releases/` and sends
+`release_note.txt` as the "What's new" text. Edit `release_note.txt` before
+each release.
+
+| | |
+|---|---|
+| Firebase project | `bangla-scanner` (owner `anwarcs36@gmail.com`) |
+| prod app | `com.codeinherit.banglascanner` — `1:670275906113:android:b35db59c5d291e399bb4c0` |
+| dev app | `com.codeinherit.banglascanner.dev` — `1:670275906113:android:f91d203c33c36a019bb4c0` |
+| Tester group | `scanner-testers` |
+
+Both clients live in the single `android/app/google-services.json`. Add
+testers with `firebase appdistribution:testers:add <email> --group-alias
+scanner-testers --project bangla-scanner --account anwarcs36@gmail.com`; they
+must accept the invitation e-mail before builds show up in the Firebase App
+Tester app.
+
+Crashlytics and Analytics are initialised on Android only (`lib/main.dart`).
+Scanning, OCR and export stay fully offline; crash reports are sent when the
+device is next online.
 
 ### iOS archive
 

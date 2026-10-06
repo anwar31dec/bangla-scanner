@@ -3,6 +3,8 @@ import java.util.Properties
 
 plugins {
     id("com.android.application")
+    id("com.google.gms.google-services")
+    id("com.google.firebase.crashlytics")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
 }
@@ -18,7 +20,8 @@ if (keystorePropertiesFile.exists()) {
 
 android {
     namespace = "com.codeinherit.banglascanner"
-    compileSdk = flutter.compileSdkVersion
+    // permission_handler_android 14 compiles against API 37; Flutter's default is still 36.
+    compileSdk = 37
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
@@ -54,12 +57,35 @@ android {
     }
 
     buildTypes {
+        debug {
+            // Same key as release so a local run and an App Distribution build of the
+            // same flavor replace each other (no INSTALL_FAILED_UPDATE_INCOMPATIBLE).
+            if (keystorePropertiesFile.exists()) {
+                signingConfig = signingConfigs.getByName("release")
+            }
+        }
         release {
             signingConfig = if (keystorePropertiesFile.exists()) {
                 signingConfigs.getByName("release")
             } else {
                 signingConfigs.getByName("debug")
             }
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+        }
+    }
+
+    // dev and prod install side by side; each package is a separate Firebase Android app
+    // (both clients live in app/google-services.json). The dev label and icons come from
+    // src/dev/res.
+    flavorDimensions += "audience"
+    productFlavors {
+        create("dev") {
+            dimension = "audience"
+            applicationIdSuffix = ".dev"
+            versionNameSuffix = "-dev"
+        }
+        create("prod") {
+            dimension = "audience"
         }
     }
 }
