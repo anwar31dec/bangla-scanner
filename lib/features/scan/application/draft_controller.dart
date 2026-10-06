@@ -15,6 +15,11 @@ const _uuid = Uuid();
 final draftProvider = NotifierProvider<DraftController, DraftDocument?>(DraftController.new);
 
 class DraftController extends Notifier<DraftDocument?> {
+  /// Filter that fresh photos (scanner or gallery) start with, so a scan
+  /// looks clean without any editing. Pages of a saved document keep
+  /// [PageFilter.original]: their filter is already baked in.
+  static const newPageFilter = PageFilter.autoColor;
+
   @override
   DraftDocument? build() => null;
 
@@ -24,7 +29,7 @@ class DraftController extends Notifier<DraftDocument?> {
     final paths = await ref.read(appPathsProvider.future);
     final dir = Directory(p.join(paths.workDir.path, _uuid.v4()));
     await dir.create(recursive: true);
-    state = DraftDocument(workDirPath: dir.path, pages: await _copyIn(dir, imagePaths));
+    state = DraftDocument(workDirPath: dir.path, pages: await _copyIn(dir, imagePaths, newPageFilter));
   }
 
   /// Starts a draft from a library document so it can be edited.
@@ -35,7 +40,7 @@ class DraftController extends Notifier<DraftDocument?> {
     await dir.create(recursive: true);
     state = DraftDocument(
       workDirPath: dir.path,
-      pages: await _copyIn(dir, pageImagePaths),
+      pages: await _copyIn(dir, pageImagePaths, PageFilter.original),
       existingDocumentId: doc.id,
       existingName: doc.name,
       existingFormat: doc.format,
@@ -46,7 +51,7 @@ class DraftController extends Notifier<DraftDocument?> {
   Future<void> addPages(List<String> imagePaths) async {
     final draft = state;
     if (draft == null) return startNew(imagePaths);
-    final added = await _copyIn(Directory(draft.workDirPath), imagePaths);
+    final added = await _copyIn(Directory(draft.workDirPath), imagePaths, newPageFilter);
     state = draft.copyWith(pages: [...draft.pages, ...added]);
   }
 
@@ -107,14 +112,14 @@ class DraftController extends Notifier<DraftDocument?> {
 
   /// Copies source images into the draft folder so later edits never touch
   /// the user's originals or plugin caches that may be cleared.
-  Future<List<DraftPage>> _copyIn(Directory dir, List<String> sources) async {
+  Future<List<DraftPage>> _copyIn(Directory dir, List<String> sources, PageFilter filter) async {
     final pages = <DraftPage>[];
     for (final source in sources) {
       final id = _uuid.v4();
       final ext = p.extension(source).isEmpty ? '.jpg' : p.extension(source).toLowerCase();
       final target = p.join(dir.path, '$id$ext');
       await File(source).copy(target);
-      pages.add(DraftPage(id: id, imagePath: target));
+      pages.add(DraftPage(id: id, imagePath: target, filter: filter));
     }
     return pages;
   }

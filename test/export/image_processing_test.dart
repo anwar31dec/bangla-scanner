@@ -36,7 +36,7 @@ void main() {
       final bw = ImageProcessing.applyFilter(ImageProcessing.decode(fakeDocumentJpeg()), PageFilter.blackWhite);
       final values = <num>{};
       for (final p in bw) {
-        values.add(p.r);
+        values.addAll([p.r, p.g, p.b]);
       }
       expect(values.difference({0, 255}), isEmpty);
       expect(values, containsAll(<num>[0, 255]));
@@ -49,9 +49,39 @@ void main() {
       expect(p.g, p.b);
     });
 
+    test('black & white pages are saved without a colour cast', () {
+      final jpeg = ImageProcessing.processPage(
+        fakeDocumentJpeg(),
+        quarterTurns: 0,
+        filter: PageFilter.blackWhite,
+        quality: ExportQuality.high,
+      );
+      final paper = img.decodeJpg(jpeg)!.getPixel(300, 30);
+      expect([paper.r, paper.g, paper.b], everyElement(greaterThan(240)));
+    });
+
+    test('auto color removes the shadow: paper turns white, text stays dark', () {
+      final out = ImageProcessing.applyFilter(ImageProcessing.decode(fakeDocumentJpeg()), PageFilter.autoColor);
+      // From the lit side into the shadow (30% darker). Further right the
+      // fixture's text underflows and is no longer dark.
+      for (final x in [60, 250, 440]) {
+        final paper = out.getPixel(x, 30), text = out.getPixel(x, 3);
+        expect([paper.r, paper.g, paper.b], everyElement(greaterThan(245)), reason: 'paper at x=$x');
+        expect(text.r, lessThan(100), reason: 'text at x=$x');
+      }
+    });
+
+    test('every filter keeps the page size', () {
+      final src = ImageProcessing.decode(fakeDocumentJpeg(width: 90, height: 70));
+      for (final f in PageFilter.values) {
+        final out = ImageProcessing.applyFilter(src, f);
+        expect([out.width, out.height], [90, 70], reason: f.name);
+      }
+    });
+
     test('processPage respects quality size limit and returns JPEG', () {
       final big = img.encodeJpg(img.Image(width: 5000, height: 3000), quality: 80);
-      final out = ImageProcessing.processPage(big, quarterTurns: 1, filter: PageFilter.enhanced, quality: ExportQuality.low);
+      final out = ImageProcessing.processPage(big, quarterTurns: 1, filter: PageFilter.autoColor, quality: ExportQuality.low);
       final decoded = img.decodeJpg(out)!;
       expect(decoded.height, ExportQuality.low.maxEdge); // rotated: long edge is now height
       expect(decoded.width < decoded.height, isTrue);

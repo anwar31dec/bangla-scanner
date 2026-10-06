@@ -1,7 +1,7 @@
 name: banglascanner
 description: "Bangla Scanner (বাংলা স্ক্যানার) - an offline document scanner for Bengali speakers."
 publish_to: 'none'
-version: 1.0.3+1
+version: 1.0.4+1
 
 environment:
   sdk: ^3.12.0

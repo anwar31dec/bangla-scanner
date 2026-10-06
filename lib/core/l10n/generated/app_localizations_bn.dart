@@ -181,13 +181,19 @@ class AppLocalizationsBn extends AppLocalizations {
   String get filterOriginal => 'আসল';
 
   @override
+  String get filterAutoColor => 'অটো কালার';
+
+  @override
   String get filterGrayscale => 'ধূসর';
 
   @override
   String get filterBlackWhite => 'সাদা-কালো';
 
   @override
-  String get filterEnhanced => 'উন্নত';
+  String get filterWhiteboard => 'হোয়াইটবোর্ড';
+
+  @override
+  String get filterLightText => 'হালকা লেখা';
 
   @override
   String get applyToAllPages => 'সব পাতায় প্রয়োগ করুন';

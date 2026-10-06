@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:banglascanner/core/models/enums.dart';
+import 'package:banglascanner/core/storage/app_database.dart';
 import 'package:banglascanner/core/storage/app_paths.dart';
 import 'package:banglascanner/core/storage/storage_providers.dart';
 import 'package:banglascanner/features/scan/application/draft_controller.dart';
@@ -66,6 +67,29 @@ void main() {
 
     await controller().addPages([sources.first]);
     expect(order(), hasLength(3));
+  });
+
+  test('fresh photos start with auto color, pages of a saved document stay as they are', () async {
+    await controller().startNew(sources);
+    await controller().addPages([sources.first]);
+    expect(container.read(draftProvider)!.pages.map((pg) => pg.filter), everyElement(PageFilter.autoColor));
+
+    final now = DateTime(2026, 10, 6);
+    final doc = DocumentRow(
+      id: 'doc',
+      name: 'Saved',
+      format: SaveFormat.pdf,
+      dirPath: root.path,
+      pageCount: 2,
+      sizeBytes: 1,
+      createdAt: now,
+      updatedAt: now,
+    );
+    await controller().startFromDocument(doc, sources.take(2).toList());
+    expect(container.read(draftProvider)!.pages.map((pg) => pg.filter), everyElement(PageFilter.original));
+    // A page photographed now and added to the saved document is fresh.
+    await controller().addPages([sources.last]);
+    expect(container.read(draftProvider)!.pages.last.filter, PageFilter.autoColor);
   });
 
   test('replacing an image (crop) resets rotation and bumps revision', () async {

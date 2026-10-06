@@ -34,8 +34,10 @@ extension EnumLabels on AppLocalizations {
 
   String filterLabel(PageFilter f) => switch (f) {
         PageFilter.original => filterOriginal,
+        PageFilter.autoColor => filterAutoColor,
         PageFilter.grayscale => filterGrayscale,
         PageFilter.blackWhite => filterBlackWhite,
-        PageFilter.enhanced => filterEnhanced,
+        PageFilter.whiteboard => filterWhiteboard,
+        PageFilter.lightText => filterLightText,
       };
 }

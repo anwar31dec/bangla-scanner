@@ -133,24 +133,9 @@ class _PageEditScreenState extends ConsumerState<PageEditScreen> {
               ],
             ),
           ),
-          // Filter choices.
-          SizedBox(
-            height: 60,
-            child: ListView(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              children: [
-                for (final f in PageFilter.values)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 4),
-                    child: ChoiceChip(
-                      label: Text(l10n.filterLabel(f)),
-                      selected: page.filter == f,
-                      onSelected: (_) => ref.read(draftProvider.notifier).setFilter(page.id, f),
-                    ),
-                  ),
-              ],
-            ),
+          _FilterStrip(
+            page: page,
+            onSelected: (f) => ref.read(draftProvider.notifier).setFilter(page.id, f),
           ),
           if (pages.length > 1)
             TextButton.icon(
@@ -189,6 +174,80 @@ class _PageEditScreenState extends ConsumerState<PageEditScreen> {
   }
 }
 
+/// Filter choices, each shown as a small preview of this page with the
+/// filter applied.
+class _FilterStrip extends StatelessWidget {
+  const _FilterStrip({required this.page, required this.onSelected});
+
+  final DraftPage page;
+  final ValueChanged<PageFilter> onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          for (final f in PageFilter.values)
+            Semantics(
+              button: true,
+              selected: page.filter == f,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(12),
+                onTap: () => onSelected(f),
+                child: Padding(
+                  padding: const EdgeInsets.all(4),
+                  child: SizedBox(
+                    width: 80,
+                    child: Column(
+                      children: [
+                        Container(
+                          height: 92,
+                          // The border is drawn over the picture so the
+                          // picture does not resize when selected.
+                          foregroundDecoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(8),
+                            border: page.filter == f
+                                ? Border.all(color: scheme.primary, width: 3)
+                                : Border.all(color: scheme.outlineVariant),
+                          ),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(8),
+                            color: scheme.surfaceContainerHighest,
+                          ),
+                          clipBehavior: Clip.antiAlias,
+                          child: SizedBox.expand(
+                            child: PagePreview(page: page.copyWith(filter: f), cacheWidth: 300, fit: BoxFit.cover),
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          l10n.filterLabel(f),
+                          maxLines: 2,
+                          textAlign: TextAlign.center,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.labelMedium?.copyWith(
+                            color: page.filter == f ? scheme.primary : scheme.onSurfaceVariant,
+                            fontWeight: page.filter == f ? FontWeight.w700 : null,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
 class _ToolButton extends StatelessWidget {
   const _ToolButton({required this.icon, required this.label, required this.onPressed});
 
@@ -204,6 +263,9 @@ class _ToolButton extends StatelessWidget {
       child: ConstrainedBox(
         constraints: const BoxConstraints(minWidth: 88, minHeight: 64),
         child: Column(
+          // Without this the bar grows to the full screen height and hides
+          // the page.
+          mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [Icon(icon, size: 28), const SizedBox(height: 4), Text(label)],
         ),

@@ -182,13 +182,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get filterOriginal => 'Original';
 
   @override
+  String get filterAutoColor => 'Auto color';
+
+  @override
   String get filterGrayscale => 'Grayscale';
 
   @override
   String get filterBlackWhite => 'Black & White';
 
   @override
-  String get filterEnhanced => 'Enhanced';
+  String get filterWhiteboard => 'Whiteboard';
+
+  @override
+  String get filterLightText => 'Light text';
 
   @override
   String get applyToAllPages => 'Apply to all pages';

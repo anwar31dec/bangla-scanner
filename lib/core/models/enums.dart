@@ -35,4 +35,22 @@ enum OcrLanguage {
 }
 
 /// Image filter applied to a page.
-enum PageFilter { original, grayscale, blackWhite, enhanced }
+enum PageFilter {
+  /// The photo as taken.
+  original,
+
+  /// White paper, no shadows, colours kept. The classic "scanned" look.
+  autoColor,
+
+  /// Like [autoColor] without colour.
+  grayscale,
+
+  /// Pure black ink on pure white. Smallest files.
+  blackWhite,
+
+  /// For whiteboards: removes glare and grey cast, boosts marker colours.
+  whiteboard,
+
+  /// Darkens faint writing such as pencil or weak print.
+  lightText,
+}

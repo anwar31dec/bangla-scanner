@@ -17,7 +17,7 @@ without an internet connection.
 | Scan with auto-crop, multi-page | `cunning_document_scanner` → ML Kit Document Scanner (Android), VisionKit (iOS) |
 | Import from gallery | `image_picker` (multi-select) |
 | Edit pages | Crop (`image_cropper`), rotate, drag-and-drop reorder, delete, add more pages |
-| Filters | Original, Grayscale, Black & White (adaptive threshold), Enhanced (auto-levels) |
+| Filters | Original, Auto color (white paper, shadows removed), Grayscale, Black & White (adaptive threshold), Whiteboard, Light text. Picked from live thumbnails of the page |
 | Save | PDF (A4, `pdf` package) or JPEG; quality Low / Medium / High; default name `Scan dd-MM-yyyy` |
 | Library | Thumbnail, name, pages, date, size; search, sort, rename, delete; metadata in drift |
 | Share / save copy | `share_plus`; Downloads/Bangla Scanner on Android, Files picker on iOS |

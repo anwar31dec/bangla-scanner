@@ -380,6 +380,12 @@ abstract class AppLocalizations {
   /// **'Original'**
   String get filterOriginal;
 
+  /// No description provided for @filterAutoColor.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto color'**
+  String get filterAutoColor;
+
   /// No description provided for @filterGrayscale.
   ///
   /// In en, this message translates to:
@@ -392,11 +398,17 @@ abstract class AppLocalizations {
   /// **'Black & White'**
   String get filterBlackWhite;
 
-  /// No description provided for @filterEnhanced.
+  /// No description provided for @filterWhiteboard.
   ///
   /// In en, this message translates to:
-  /// **'Enhanced'**
-  String get filterEnhanced;
+  /// **'Whiteboard'**
+  String get filterWhiteboard;
+
+  /// No description provided for @filterLightText.
+  ///
+  /// In en, this message translates to:
+  /// **'Light text'**
+  String get filterLightText;
 
   /// No description provided for @applyToAllPages.
   ///
