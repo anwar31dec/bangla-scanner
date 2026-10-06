@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 import '../../../core/l10n/l10n.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/widgets/empty_state.dart';
+import '../../library/application/library_providers.dart';
+import '../../library/presentation/document_tile.dart';
 import '../../scan/presentation/scan_actions.dart';
 
 /// Home: one big Scan button, Import and ID Card shortcuts, then recent
@@ -16,11 +18,17 @@ class HomeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final theme = Theme.of(context);
+    final recent = ref.watch(recentDocumentsProvider);
 
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.appTitle),
         actions: [
+          IconButton(
+            tooltip: l10n.navLibrary,
+            icon: const Icon(Icons.folder_outlined),
+            onPressed: () => context.push(Routes.library),
+          ),
           IconButton(
             tooltip: l10n.navSettings,
             icon: const Icon(Icons.settings_outlined),
@@ -58,12 +66,35 @@ class HomeScreen extends ConsumerWidget {
                   ],
                 ),
                 const SizedBox(height: 28),
-                Text(l10n.homeRecent, style: theme.textTheme.titleLarge),
+                Row(
+                  children: [
+                    Expanded(child: Text(l10n.homeRecent, style: theme.textTheme.titleLarge)),
+                    if (recent.value?.isNotEmpty ?? false)
+                      TextButton(onPressed: () => context.push(Routes.library), child: Text(l10n.homeSeeAll)),
+                  ],
+                ),
               ],
             ),
           ),
-          SliverToBoxAdapter(
-            child: EmptyState(icon: Icons.description_outlined, title: l10n.homeEmpty, message: l10n.homeEmptyHint),
+          ...recent.when(
+            loading: () => [const SliverToBoxAdapter(child: Center(child: CircularProgressIndicator()))],
+            error: (e, _) => [SliverToBoxAdapter(child: EmptyState(icon: Icons.error_outline, title: l10n.errorGeneric))],
+            data: (docs) => docs.isEmpty
+                ? [
+                    SliverToBoxAdapter(
+                      child: EmptyState(icon: Icons.description_outlined, title: l10n.homeEmpty, message: l10n.homeEmptyHint),
+                    ),
+                  ]
+                : [
+                    SliverPadding(
+                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+                      sliver: SliverList.separated(
+                        itemCount: docs.length,
+                        separatorBuilder: (context, index) => const SizedBox(height: 10),
+                        itemBuilder: (context, i) => DocumentTile(key: ValueKey(docs[i].id), doc: docs[i]),
+                      ),
+                    ),
+                  ],
           ),
         ],
       ),

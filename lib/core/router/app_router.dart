@@ -5,6 +5,7 @@ import '../../features/editor/presentation/editor_screen.dart';
 import '../../features/editor/presentation/page_edit_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
 import '../../features/library/presentation/document_screen.dart';
+import '../../features/library/presentation/library_screen.dart';
 import '../../features/settings/presentation/settings_screen.dart';
 
 /// Route paths used across the app.
@@ -12,6 +13,7 @@ abstract final class Routes {
   static const home = '/';
   static const settings = '/settings';
   static const editor = '/editor';
+  static const library = '/library';
   static const document = '/document/:id';
 
   static String documentPath(String id) => '/document/$id';
@@ -23,6 +25,7 @@ final routerProvider = Provider<GoRouter>((ref) {
     initialLocation: Routes.home,
     routes: [
       GoRoute(path: Routes.home, builder: (context, state) => const HomeScreen()),
+      GoRoute(path: Routes.library, builder: (context, state) => const LibraryScreen()),
       GoRoute(path: Routes.settings, builder: (context, state) => const SettingsScreen()),
       GoRoute(
         path: Routes.editor,
