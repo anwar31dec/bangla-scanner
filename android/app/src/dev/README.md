@@ -3,7 +3,8 @@
 Files in this folder are merged on top of `src/main` only for the `dev` flavor
 (`flutter run --flavor dev`).
 
-- `res/mipmap-*` — launcher icons with a red "DEV" band so testers can tell the two apps apart.
+- `res/mipmap-*` — launcher icons with a red "DEV" band so testers can tell the two apps apart
+  (generated, together with the prod and iOS icons, by `tool/icon/generate_icons.py`).
 - `res/values*/strings.xml` — the "DEV" app label (English and Bangla).
 
 There is no flavor-specific `google-services.json` here: `android/app/google-services.json`
