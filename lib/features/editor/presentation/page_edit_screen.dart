@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:isolate';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -14,6 +15,11 @@ import '../../export/data/image_processing.dart';
 import '../../scan/application/draft_controller.dart';
 import '../../scan/data/draft_document.dart';
 import 'page_preview.dart';
+
+/// Top-level on purpose: a closure created inside the State would carry the
+/// State with it, and that cannot be sent to another isolate.
+Future<Uint8List> _rotateInBackground(Uint8List bytes, int quarterTurns) =>
+    Isolate.run(() => ImageProcessing.rotateJpeg(bytes, quarterTurns));
 
 /// Edits one page: crop, rotate, filter, delete. Swipe to move between
 /// pages.
@@ -48,7 +54,7 @@ class _PageEditScreenState extends ConsumerState<PageEditScreen> {
       if (page.quarterTurns != 0) {
         final bytes = await File(source).readAsBytes();
         final turns = page.quarterTurns;
-        final rotated = await Isolate.run(() => ImageProcessing.rotateJpeg(bytes, turns));
+        final rotated = await _rotateInBackground(bytes, turns);
         source = p.join(p.dirname(page.imagePath), 'rot_${DateTime.now().microsecondsSinceEpoch}.jpg');
         await File(source).writeAsBytes(rotated, flush: true);
       }

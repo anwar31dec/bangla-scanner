@@ -1,3 +1,4 @@
+import 'dart:isolate';
 import 'dart:typed_data';
 
 import 'package:image/image.dart' as img;
@@ -23,6 +24,14 @@ class IdCardLayout {
   static const dpi = 300;
 
   static int mmToPx(double mm, {int dpi = dpi}) => (mm / 25.4 * dpi).round();
+
+  /// Runs [compose] in a background isolate.
+  ///
+  /// Call this instead of wrapping [compose] in `Isolate.run` inside a
+  /// widget: a closure created there also carries the widget's State, which
+  /// cannot be sent to another isolate.
+  static Future<Uint8List> composeInBackground(Uint8List front, Uint8List back) =>
+      Isolate.run(() => compose(front, back));
 
   /// Returns a high quality JPEG of the A4 page.
   static Uint8List compose(Uint8List front, Uint8List back) {

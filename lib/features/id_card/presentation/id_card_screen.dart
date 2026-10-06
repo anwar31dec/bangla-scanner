@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:isolate';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -86,7 +85,7 @@ class _IdCardScreenState extends ConsumerState<IdCardScreen> {
       final dir = await _ensureWorkDir();
       final frontBytes = await File(front).readAsBytes();
       final backBytes = await File(back).readAsBytes();
-      final pageBytes = await Isolate.run(() => IdCardLayout.compose(frontBytes, backBytes));
+      final pageBytes = await IdCardLayout.composeInBackground(frontBytes, backBytes);
       final pagePath = p.join(dir.path, 'a4_page.jpg');
       await File(pagePath).writeAsBytes(pageBytes, flush: true);
 

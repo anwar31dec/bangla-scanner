@@ -9,6 +9,12 @@ void main() {
     expect([card.width, card.height], [1011, 638]);
   });
 
+  test('composes in a background isolate', () async {
+    final side = img.encodeJpg(img.Image(width: 856, height: 540));
+    final page = img.decodeJpg(await IdCardLayout.composeInBackground(side, side))!;
+    expect([page.width, page.height], [2480, 3508]);
+  });
+
   test('composes both sides centred on an A4 page at 300 dpi', () {
     img.Image solid(int r, int g, int b) => img.fill(img.Image(width: 856, height: 540), color: img.ColorRgb8(r, g, b));
     final front = img.encodeJpg(solid(200, 0, 0));
