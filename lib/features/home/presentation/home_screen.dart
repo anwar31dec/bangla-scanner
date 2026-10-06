@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/l10n/l10n.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/widgets/empty_state.dart';
+import '../../scan/presentation/scan_actions.dart';
 
 /// Home: one big Scan button, Import and ID Card shortcuts, then recent
 /// documents.
@@ -35,7 +36,7 @@ class HomeScreen extends ConsumerWidget {
               children: [
                 Text(l10n.homeGreeting, style: theme.textTheme.titleMedium),
                 const SizedBox(height: 16),
-                ScanHeroButton(onPressed: () {}),
+                ScanHeroButton(onPressed: () => ScanActions.scanNew(context, ref)),
                 const SizedBox(height: 12),
                 Row(
                   children: [
@@ -43,7 +44,7 @@ class HomeScreen extends ConsumerWidget {
                       child: HomeActionTile(
                         icon: Icons.photo_library_outlined,
                         label: l10n.homeImport,
-                        onPressed: () {},
+                        onPressed: () => ScanActions.importNew(context, ref),
                       ),
                     ),
                     const SizedBox(width: 12),

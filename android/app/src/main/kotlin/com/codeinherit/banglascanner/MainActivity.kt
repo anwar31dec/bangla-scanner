@@ -17,6 +17,8 @@ class MainActivity : FlutterActivity() {
         super.configureFlutterEngine(flutterEngine)
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL).setMethodCallHandler { call, result ->
             when (call.method) {
+                // Only Android 9 and below need WRITE_EXTERNAL_STORAGE.
+                "needsStoragePermission" -> result.success(Build.VERSION.SDK_INT < Build.VERSION_CODES.Q)
                 "saveToDownloads" -> {
                     val path = call.argument<String>("path")
                     val name = call.argument<String>("name")
