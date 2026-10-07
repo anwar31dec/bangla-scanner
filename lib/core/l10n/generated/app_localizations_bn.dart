@@ -24,6 +24,12 @@ class AppLocalizationsBn extends AppLocalizations {
   String get homeImport => 'গ্যালারি থেকে আনুন';
 
   @override
+  String get homeFlashScan => 'ফ্ল্যাশ স্ক্যান';
+
+  @override
+  String get homeFlashScanSubtitle => 'শুধু ছবি তোলার মুহূর্তে ফ্ল্যাশ জ্বলবে';
+
+  @override
   String get homeIdCard => 'আইডি কার্ড';
 
   @override
@@ -53,6 +59,42 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get importFailed => 'ছবিগুলো আনা যায়নি।';
+
+  @override
+  String get flashOn => 'ফ্ল্যাশ চালু';
+
+  @override
+  String get flashAuto => 'ফ্ল্যাশ অটো';
+
+  @override
+  String get flashOff => 'ফ্ল্যাশ বন্ধ';
+
+  @override
+  String get captureAuto => 'অটো';
+
+  @override
+  String get captureManual => 'ম্যানুয়াল';
+
+  @override
+  String get cameraTakePhoto => 'ছবি তুলুন';
+
+  @override
+  String get cameraUnavailable => 'ক্যামেরা খোলা যায়নি।';
+
+  @override
+  String get cameraRetake => 'আবার তুলুন';
+
+  @override
+  String get cameraUsePage => 'পাতা রাখুন';
+
+  @override
+  String get cropCornersTitle => 'কোণা ঠিক করুন';
+
+  @override
+  String get cropCornersHint => 'কোণাগুলো টেনে পাতার কিনারায় আনুন।';
+
+  @override
+  String get cropWholePhoto => 'পুরো ছবি';
 
   @override
   String get permissionCameraTitle => 'ক্যামেরার অনুমতি';
@@ -124,6 +166,9 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get addFromCamera => 'ক্যামেরা দিয়ে স্ক্যান';
+
+  @override
+  String get addFromFlashCamera => 'ফ্ল্যাশ ক্যামেরা দিয়ে স্ক্যান';
 
   @override
   String get addFromGallery => 'গ্যালারি থেকে বাছুন';

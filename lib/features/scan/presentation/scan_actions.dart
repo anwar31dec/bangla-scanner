@@ -1,14 +1,29 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:path/path.dart' as p;
 
 import '../../../core/l10n/l10n.dart';
 import '../../../core/permissions/permission_service.dart';
 import '../../../core/router/app_router.dart';
+import '../../../core/storage/storage_providers.dart';
 import '../../../core/widgets/dialogs.dart';
 import '../application/draft_controller.dart';
 import '../data/scanner_service.dart';
+import 'flash_camera_screen.dart';
+
+/// Where new pages come from.
+enum PageSource {
+  /// The native document scanner.
+  scanner,
+
+  /// The in-app camera whose flash fires only when a photo is taken.
+  flashCamera,
+  gallery,
+}
 
 /// UI-level orchestration of scanning/importing: permissions, the native
 /// scanner, error messages and navigation to the editor.
@@ -24,6 +39,15 @@ class ScanActions {
     if (context.mounted) context.push(Routes.editor);
   }
 
+  /// "Flash Scan": take pages with the in-app camera, then open the editor.
+  static Future<void> flashScanNew(BuildContext context, WidgetRef ref) async {
+    final paths = await captureWithFlash(context, ref);
+    if (paths == null || !context.mounted) return;
+    await ref.read(draftProvider.notifier).startNew(paths);
+    _deleteCaptureDir(paths);
+    if (context.mounted) context.push(Routes.editor);
+  }
+
   /// "Import from Gallery": pick photos, then open the editor.
   static Future<void> importNew(BuildContext context, WidgetRef ref) async {
     final paths = await pickImages(context, ref);
@@ -33,11 +57,21 @@ class ScanActions {
   }
 
   /// Adds pages to the open draft (from the editor).
-  static Future<void> addPages(BuildContext context, WidgetRef ref, {required bool fromCamera}) async {
-    final paths = fromCamera ? await scanPages(context, ref) : await pickImages(context, ref);
+  static Future<void> addPages(BuildContext context, WidgetRef ref, {required PageSource source}) async {
+    final paths = await switch (source) {
+      PageSource.scanner => scanPages(context, ref),
+      PageSource.flashCamera => captureWithFlash(context, ref),
+      PageSource.gallery => pickImages(context, ref),
+    };
     if (paths == null) return;
     await ref.read(draftProvider.notifier).addPages(paths);
-    if (fromCamera) await ref.read(scannerServiceProvider).cleanCache();
+    switch (source) {
+      case PageSource.scanner:
+        await ref.read(scannerServiceProvider).cleanCache();
+      case PageSource.flashCamera:
+        _deleteCaptureDir(paths);
+      case PageSource.gallery:
+    }
   }
 
   /// Runs the native scanner. Returns null when cancelled or failed (the
@@ -61,6 +95,35 @@ class ScanActions {
     }
     return null;
   }
+
+  /// Opens the in-app camera, whose flash fires only when a photo is taken.
+  /// Returns the pages (in a folder of their own, see [_deleteCaptureDir]),
+  /// or null when cancelled.
+  static Future<List<String>?> captureWithFlash(BuildContext context, WidgetRef ref) async {
+    if (!await PermissionService.ensureCamera(context)) return null;
+    final Directory dir;
+    try {
+      final paths = await ref.read(appPathsProvider.future);
+      dir = Directory(p.join(paths.workDir.path, 'camera_${DateTime.now().microsecondsSinceEpoch}'));
+      await dir.create(recursive: true);
+    } catch (e) {
+      if (context.mounted) showError(context, e);
+      return null;
+    }
+    if (!context.mounted) return null;
+    final pages = await Navigator.of(context).push<List<String>>(
+      MaterialPageRoute(fullscreenDialog: true, builder: (context) => FlashCameraScreen(outputDir: dir)),
+    );
+    if (pages == null || pages.isEmpty) {
+      dir.delete(recursive: true).ignore();
+      return null;
+    }
+    return pages;
+  }
+
+  /// Removes the folder [captureWithFlash] wrote its pages to, once they
+  /// have been copied into the draft.
+  static void _deleteCaptureDir(List<String> paths) => File(paths.first).parent.delete(recursive: true).ignore();
 
   /// Opens the gallery picker. Returns null when cancelled or failed.
   static Future<List<String>?> pickImages(BuildContext context, WidgetRef ref, {bool single = false}) async {

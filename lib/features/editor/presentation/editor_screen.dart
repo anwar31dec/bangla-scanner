@@ -50,7 +50,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
 
   Future<void> _addPages() async {
     final l10n = context.l10n;
-    final fromCamera = await showModalBottomSheet<bool>(
+    final source = await showModalBottomSheet<PageSource>(
       context: context,
       showDragHandle: true,
       builder: (context) => SafeArea(
@@ -60,22 +60,27 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
             ListTile(
               leading: const Icon(Icons.document_scanner_outlined),
               title: Text(l10n.addFromCamera),
-              onTap: () => Navigator.pop(context, true),
+              onTap: () => Navigator.pop(context, PageSource.scanner),
+            ),
+            ListTile(
+              leading: const Icon(Icons.flash_on_outlined),
+              title: Text(l10n.addFromFlashCamera),
+              onTap: () => Navigator.pop(context, PageSource.flashCamera),
             ),
             ListTile(
               leading: const Icon(Icons.photo_library_outlined),
               title: Text(l10n.addFromGallery),
-              onTap: () => Navigator.pop(context, false),
+              onTap: () => Navigator.pop(context, PageSource.gallery),
             ),
             const SizedBox(height: 8),
           ],
         ),
       ),
     );
-    if (fromCamera == null || !mounted) return;
+    if (source == null || !mounted) return;
     setState(() => _busy = true);
     try {
-      await ScanActions.addPages(context, ref, fromCamera: fromCamera);
+      await ScanActions.addPages(context, ref, source: source);
     } catch (e) {
       if (mounted) showError(context, e);
     } finally {

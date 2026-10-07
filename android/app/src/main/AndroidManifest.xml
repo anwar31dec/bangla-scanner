@@ -1,8 +1,13 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <!-- Camera: document scanning. -->
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-feature android:name="android.hardware.camera" android:required="false" />
+    <!-- The camera plugin (Flash Scan) asks for these for video recording;
+         the app only takes photos and must stay installable without a camera. -->
+    <uses-feature android:name="android.hardware.camera.any" android:required="false" tools:node="replace" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" tools:node="remove" />
 
     <!-- Only needed to save copies into Downloads on Android 9 and below.
          Android 10+ uses MediaStore, which needs no permission. -->

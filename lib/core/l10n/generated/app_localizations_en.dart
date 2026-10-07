@@ -24,6 +24,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeImport => 'Import from Gallery';
 
   @override
+  String get homeFlashScan => 'Flash Scan';
+
+  @override
+  String get homeFlashScanSubtitle =>
+      'The flash lights up only when the photo is taken';
+
+  @override
   String get homeIdCard => 'ID Card';
 
   @override
@@ -53,6 +60,42 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get importFailed => 'Could not import the images.';
+
+  @override
+  String get flashOn => 'Flash on';
+
+  @override
+  String get flashAuto => 'Flash auto';
+
+  @override
+  String get flashOff => 'Flash off';
+
+  @override
+  String get captureAuto => 'Auto';
+
+  @override
+  String get captureManual => 'Manual';
+
+  @override
+  String get cameraTakePhoto => 'Take photo';
+
+  @override
+  String get cameraUnavailable => 'Could not open the camera.';
+
+  @override
+  String get cameraRetake => 'Retake';
+
+  @override
+  String get cameraUsePage => 'Use page';
+
+  @override
+  String get cropCornersTitle => 'Adjust corners';
+
+  @override
+  String get cropCornersHint => 'Drag the corners to the edges of the page.';
+
+  @override
+  String get cropWholePhoto => 'Whole photo';
 
   @override
   String get permissionCameraTitle => 'Camera permission';
@@ -125,6 +168,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get addFromCamera => 'Scan with camera';
+
+  @override
+  String get addFromFlashCamera => 'Scan with flash camera';
 
   @override
   String get addFromGallery => 'Choose from gallery';

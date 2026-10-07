@@ -23,6 +23,10 @@ void main() {
   testWidgets('recent list, search and delete with confirmation', (tester) async {
     final (app, db, _) = await buildTestApp(prefs: {'settings.language': 'en'});
     addTearDown(db.close);
+    // Tall enough for both recent documents below the home actions.
+    tester.view.physicalSize = const Size(800, 1200);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
     await tester.runAsync(() async {
       await _insert(db, 'a', 'Bank statement', DateTime(2026, 10, 1));
       await _insert(db, 'b', 'Birth certificate', DateTime(2026, 10, 5));

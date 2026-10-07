@@ -9,8 +9,8 @@ import '../../library/application/library_providers.dart';
 import '../../library/presentation/document_tile.dart';
 import '../../scan/presentation/scan_actions.dart';
 
-/// Home: one big Scan button, Import and ID Card shortcuts, then recent
-/// documents.
+/// Home: one big Scan button, Flash Scan, Import and ID Card shortcuts, then
+/// recent documents.
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
@@ -45,6 +45,8 @@ class HomeScreen extends ConsumerWidget {
                 Text(l10n.homeGreeting, style: theme.textTheme.titleMedium),
                 const SizedBox(height: 16),
                 ScanHeroButton(onPressed: () => ScanActions.scanNew(context, ref)),
+                const SizedBox(height: 12),
+                FlashScanTile(onPressed: () => ScanActions.flashScanNew(context, ref)),
                 const SizedBox(height: 12),
                 Row(
                   children: [
@@ -152,6 +154,53 @@ class ScanHeroButton extends StatelessWidget {
                 ),
               ],
             ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Wide secondary action below the Scan button: the in-app camera whose
+/// flash fires only when a photo is taken.
+class FlashScanTile extends StatelessWidget {
+  const FlashScanTile({super.key, required this.onPressed});
+
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    return Material(
+      color: scheme.secondaryContainer,
+      borderRadius: BorderRadius.circular(20),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(20),
+        onTap: onPressed,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+          child: Row(
+            children: [
+              Icon(Icons.flash_on_outlined, size: 32, color: scheme.onSecondaryContainer),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      l10n.homeFlashScan,
+                      style: theme.textTheme.titleMedium?.copyWith(color: scheme.onSecondaryContainer),
+                    ),
+                    Text(
+                      l10n.homeFlashScanSubtitle,
+                      style: theme.textTheme.bodySmall?.copyWith(color: scheme.onSecondaryContainer),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
         ),
       ),

@@ -15,6 +15,7 @@ without an internet connection.
 | Feature | How |
 | --- | --- |
 | Scan with auto-crop, multi-page | `cunning_document_scanner` → ML Kit Document Scanner (Android), VisionKit (iOS) |
+| Flash Scan | In-app camera (`camera`) whose flash fires only when the photo is taken (ML Kit's scanner can only keep its light on). Live page outline and auto capture when the page is held still; own page detection and perspective crop in Dart, with draggable corners |
 | Import from gallery | `image_picker` (multi-select) |
 | Edit pages | Crop (`image_cropper`), rotate, drag-and-drop reorder, delete, add more pages |
 | Filters | Original, Auto color (white paper, shadows removed), Grayscale, Black & White (adaptive threshold), Whiteboard, Light text. Picked from live thumbnails of the page |

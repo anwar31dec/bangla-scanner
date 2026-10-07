@@ -25,6 +25,8 @@
 	<string>Bangla Scanner</string>
 	<key>NSCameraUsageDescription</key>
 	<string>ডকুমেন্ট স্ক্যান করতে ক্যামেরা ব্যবহার করা হয়। ছবি আপনার ফোনেই থাকে। (The camera is used to scan your documents. Photos stay on your phone.)</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>বাংলা স্ক্যানার মাইক্রোফোন ব্যবহার করে না। (Bangla Scanner does not record audio; the camera component requires this entry.)</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>গ্যালারির ছবি থেকে ডকুমেন্ট তৈরি করতে ছবির লাইব্রেরি ব্যবহার করা হয়। (Your photo library is used to turn photos into documents.)</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>

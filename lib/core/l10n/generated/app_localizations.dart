@@ -128,6 +128,18 @@ abstract class AppLocalizations {
   /// **'Import from Gallery'**
   String get homeImport;
 
+  /// No description provided for @homeFlashScan.
+  ///
+  /// In en, this message translates to:
+  /// **'Flash Scan'**
+  String get homeFlashScan;
+
+  /// No description provided for @homeFlashScanSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'The flash lights up only when the photo is taken'**
+  String get homeFlashScanSubtitle;
+
   /// No description provided for @homeIdCard.
   ///
   /// In en, this message translates to:
@@ -187,6 +199,78 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Could not import the images.'**
   String get importFailed;
+
+  /// No description provided for @flashOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Flash on'**
+  String get flashOn;
+
+  /// No description provided for @flashAuto.
+  ///
+  /// In en, this message translates to:
+  /// **'Flash auto'**
+  String get flashAuto;
+
+  /// No description provided for @flashOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Flash off'**
+  String get flashOff;
+
+  /// No description provided for @captureAuto.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto'**
+  String get captureAuto;
+
+  /// No description provided for @captureManual.
+  ///
+  /// In en, this message translates to:
+  /// **'Manual'**
+  String get captureManual;
+
+  /// No description provided for @cameraTakePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Take photo'**
+  String get cameraTakePhoto;
+
+  /// No description provided for @cameraUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not open the camera.'**
+  String get cameraUnavailable;
+
+  /// No description provided for @cameraRetake.
+  ///
+  /// In en, this message translates to:
+  /// **'Retake'**
+  String get cameraRetake;
+
+  /// No description provided for @cameraUsePage.
+  ///
+  /// In en, this message translates to:
+  /// **'Use page'**
+  String get cameraUsePage;
+
+  /// No description provided for @cropCornersTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Adjust corners'**
+  String get cropCornersTitle;
+
+  /// No description provided for @cropCornersHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Drag the corners to the edges of the page.'**
+  String get cropCornersHint;
+
+  /// No description provided for @cropWholePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Whole photo'**
+  String get cropWholePhoto;
 
   /// No description provided for @permissionCameraTitle.
   ///
@@ -301,6 +385,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Scan with camera'**
   String get addFromCamera;
+
+  /// No description provided for @addFromFlashCamera.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan with flash camera'**
+  String get addFromFlashCamera;
 
   /// No description provided for @addFromGallery.
   ///

@@ -12,6 +12,7 @@ void main() {
 
     expect(find.text('বাংলা স্ক্যানার'), findsOneWidget);
     expect(find.text('স্ক্যান'), findsOneWidget);
+    expect(find.text('ফ্ল্যাশ স্ক্যান'), findsOneWidget);
     expect(find.text('গ্যালারি থেকে আনুন'), findsOneWidget);
     expect(find.text('আইডি কার্ড'), findsOneWidget);
     expect(find.text('এখনো কোনো ডকুমেন্ট নেই'), findsOneWidget);
