@@ -45,7 +45,11 @@ class _FlashCameraScreenState extends State<FlashCameraScreen> with WidgetsBindi
   static const _steadyFramesNeeded = 6;
 
   /// A page this different from the last captured one is a new page.
-  static const _newPageShift = 0.12;
+  static const _newPageShift = 0.25;
+
+  /// Consecutive frames without the captured page (gone or replaced) before
+  /// auto capture is allowed again; a single flickering frame is not enough.
+  static const _rearmFramesNeeded = 4;
 
   /// Pause after a capture before auto capture may fire again, so the user
   /// can press Done or move to the next page.
@@ -68,6 +72,7 @@ class _FlashCameraScreenState extends State<FlashCameraScreen> with WidgetsBindi
   /// been seen since; stops the same page being taken twice.
   DocumentQuad? _lastCaptured;
   bool _armed = true;
+  int _rearmFrames = 0;
   DateTime _autoAllowedAt = DateTime.fromMillisecondsSinceEpoch(0);
 
   bool get _locked => _steadyFrames >= _steadyFramesNeeded;
@@ -191,17 +196,21 @@ class _FlashCameraScreenState extends State<FlashCameraScreen> with WidgetsBindi
     final previous = _live;
     if (quad == null) {
       _steadyFrames = 0;
-      _armed = true;
     } else {
       _steadyFrames = previous != null && quad.maxCornerShift(previous) < _steadyTolerance ? _steadyFrames + 1 : 0;
+    }
+    if (!_armed) {
       final captured = _lastCaptured;
-      if (captured != null && quad.maxCornerShift(captured) > _newPageShift) _armed = true;
+      final pageGone = quad == null || captured == null || quad.maxCornerShift(captured) > _newPageShift;
+      _rearmFrames = pageGone ? _rearmFrames + 1 : 0;
+      if (_rearmFrames >= _rearmFramesNeeded) _armed = true;
     }
     if (quad != previous || _steadyFrames == _steadyFramesNeeded) setState(() => _live = quad);
 
     if (quad != null && _auto && _armed && _locked && DateTime.now().isAfter(_autoAllowedAt)) {
       _lastCaptured = quad;
       _armed = false;
+      _rearmFrames = 0;
       _capture();
     }
   }
@@ -240,8 +249,12 @@ class _FlashCameraScreenState extends State<FlashCameraScreen> with WidgetsBindi
         final target = p.join(widget.outputDir.path, 'page_${DateTime.now().microsecondsSinceEpoch}.jpg');
         await File(target).writeAsBytes(page, flush: true);
         _pages.add(target);
+      } else {
+        // Retake: the same page may be captured again.
+        _armed = true;
       }
     } catch (_) {
+      _armed = true;
       if (mounted) showSnack(context, l10n.scanFailed);
     } finally {
       if (shotPath != null) File(shotPath).delete().ignore();
@@ -318,6 +331,8 @@ class _FlashCameraScreenState extends State<FlashCameraScreen> with WidgetsBindi
                     else
                       const CircularProgressIndicator(color: Colors.white),
                     if (_busy && controller != null) const CircularProgressIndicator(color: Colors.white),
+                    if (!_busy && _auto && !_armed && _live != null)
+                      Positioned(bottom: 16, child: _Hint(text: l10n.cameraNextPageHint)),
                   ],
                 ),
               ),
@@ -466,6 +481,24 @@ class _FlashButton extends StatelessWidget {
       style: TextButton.styleFrom(foregroundColor: color, disabledForegroundColor: color.withValues(alpha: 0.5)),
       icon: Icon(icon),
       label: Text(label),
+    );
+  }
+}
+
+/// Small pill of text over the preview.
+class _Hint extends StatelessWidget {
+  const _Hint({required this.text});
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(color: Colors.black54, borderRadius: BorderRadius.circular(20)),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        child: Text(text, style: const TextStyle(color: Colors.white)),
+      ),
     );
   }
 }

@@ -77,6 +77,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get captureManual => 'Manual';
 
   @override
+  String get cameraNextPageHint =>
+      'Page saved. Show the next page, or press Done.';
+
+  @override
   String get cameraTakePhoto => 'Take photo';
 
   @override

@@ -24,6 +24,7 @@
   "flashOff": "Flash off",
   "captureAuto": "Auto",
   "captureManual": "Manual",
+  "cameraNextPageHint": "Page saved. Show the next page, or press Done.",
   "cameraTakePhoto": "Take photo",
   "cameraUnavailable": "Could not open the camera.",
   "cameraRetake": "Retake",

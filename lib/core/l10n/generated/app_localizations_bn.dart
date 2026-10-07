@@ -76,6 +76,10 @@ class AppLocalizationsBn extends AppLocalizations {
   String get captureManual => 'ম্যানুয়াল';
 
   @override
+  String get cameraNextPageHint =>
+      'পাতা রাখা হয়েছে। পরের পাতা দেখান, অথবা সম্পন্ন চাপুন।';
+
+  @override
   String get cameraTakePhoto => 'ছবি তুলুন';
 
   @override

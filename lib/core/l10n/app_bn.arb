@@ -24,6 +24,7 @@
   "flashOff": "ফ্ল্যাশ বন্ধ",
   "captureAuto": "অটো",
   "captureManual": "ম্যানুয়াল",
+  "cameraNextPageHint": "পাতা রাখা হয়েছে। পরের পাতা দেখান, অথবা সম্পন্ন চাপুন।",
   "cameraTakePhoto": "ছবি তুলুন",
   "cameraUnavailable": "ক্যামেরা খোলা যায়নি।",
   "cameraRetake": "আবার তুলুন",

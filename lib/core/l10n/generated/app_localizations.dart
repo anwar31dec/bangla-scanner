@@ -230,6 +230,12 @@ abstract class AppLocalizations {
   /// **'Manual'**
   String get captureManual;
 
+  /// No description provided for @cameraNextPageHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Page saved. Show the next page, or press Done.'**
+  String get cameraNextPageHint;
+
   /// No description provided for @cameraTakePhoto.
   ///
   /// In en, this message translates to:
