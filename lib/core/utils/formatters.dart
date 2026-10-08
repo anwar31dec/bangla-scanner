@@ -26,10 +26,13 @@ class Formatters {
   static String dateTime(DateTime date, String locale) =>
       DateFormat('dd-MM-yyyy, h:mm a', locale).format(date);
 
-  /// Default document name: "Scan 06-10-2026". Always uses Latin digits so
-  /// that file names stay portable when shared.
+  /// Prefix used for default document names and as the empty-name fallback.
+  static const docNamePrefix = 'Doc';
+
+  /// Default document name: "Doc-06-10-2026-14-05-09" (dd-MM-yyyy-HH-mm-ss) in
+  /// the device's local time. Latin digits only so file names stay portable.
   static String defaultScanName(DateTime now) =>
-      'Scan ${DateFormat('dd-MM-yyyy', 'en').format(now)}';
+      '$docNamePrefix-${DateFormat('dd-MM-yyyy-HH-mm-ss', 'en').format(now)}';
 
   /// Removes characters that are not allowed in file names on Android/iOS.
   static String safeFileName(String name) {
@@ -37,6 +40,6 @@ class Formatters {
         .replaceAll(RegExp(r'[\\/:*?"<>|\x00-\x1F]'), '_')
         .replaceAll(RegExp(r'\s+'), ' ')
         .trim();
-    return cleaned.isEmpty ? 'Scan' : cleaned;
+    return cleaned.isEmpty ? docNamePrefix : cleaned;
   }
 }

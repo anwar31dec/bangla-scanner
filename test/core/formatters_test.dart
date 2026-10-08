@@ -8,8 +8,8 @@ void main() {
     await initializeDateFormatting('en');
   });
 
-  test('default scan name uses dd-MM-yyyy with Latin digits', () {
-    expect(Formatters.defaultScanName(DateTime(2026, 10, 6)), 'Scan 06-10-2026');
+  test('default document name is Doc-dd-MM-yyyy-HH-mm-ss in local time', () {
+    expect(Formatters.defaultScanName(DateTime(2026, 10, 6, 14, 5, 9)), 'Doc-06-10-2026-14-05-09');
   });
 
   test('file sizes', () {
@@ -24,7 +24,7 @@ void main() {
 
   test('unsafe characters are removed from file names', () {
     expect(Formatters.safeFileName('a/b:c*?"<>|'), 'a_b_c______');
-    expect(Formatters.safeFileName('   '), 'Scan');
+    expect(Formatters.safeFileName('   '), 'Doc');
     expect(Formatters.safeFileName('আমার ডকুমেন্ট'), 'আমার ডকুমেন্ট');
   });
 }
