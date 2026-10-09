@@ -72,6 +72,11 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
               title: Text(l10n.addFromGallery),
               onTap: () => Navigator.pop(context, PageSource.gallery),
             ),
+            ListTile(
+              leading: const Icon(Icons.picture_as_pdf_outlined),
+              title: Text(l10n.addFromPdf),
+              onTap: () => Navigator.pop(context, PageSource.pdf),
+            ),
             const SizedBox(height: 8),
           ],
         ),

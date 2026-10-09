@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../core/app_info.dart';
 import '../../../core/l10n/l10n.dart';
 import '../../../core/models/enums.dart';
+import '../../../core/router/app_router.dart';
 import '../../../core/widgets/dialogs.dart';
 import '../../lock/application/lock_controller.dart';
 import '../../lock/presentation/lock_screen.dart';
 import '../application/settings_controller.dart';
-
-const appVersion = '1.1.0';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -175,6 +176,20 @@ class SettingsScreen extends ConsumerWidget {
                     ),
                   ],
                 ],
+              ),
+            ),
+          ),
+          _Section(
+            icon: Icons.cloud_off_outlined,
+            title: l10n.settingsBackup,
+            child: Card(
+              margin: EdgeInsets.zero,
+              child: ListTile(
+                leading: const Icon(Icons.archive_outlined),
+                title: Text(l10n.backupTitle),
+                subtitle: Text(l10n.backupSettingsHint),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => context.push(Routes.backup),
               ),
             ),
           ),

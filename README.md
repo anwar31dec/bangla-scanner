@@ -16,8 +16,9 @@ without an internet connection.
 | --- | --- |
 | Scan with auto-crop, multi-page | `cunning_document_scanner` → ML Kit Document Scanner (Android), VisionKit (iOS) |
 | Flash Scan | In-app camera (`camera`) whose flash fires only when the photo is taken (ML Kit's scanner can only keep its light on). Live page outline and auto capture when the page is held still; own page detection and perspective crop in Dart, with draggable corners |
-| Import from gallery | `image_picker` (multi-select) |
-| Edit pages | Crop (`image_cropper`), rotate, drag-and-drop reorder, delete, add more pages, **Book split** (cut a photo of an open book into two pages) |
+| Import | Photos from the gallery (`image_picker`, multi-select) or a **PDF file**: each page is rendered to a JPEG (Android `PdfRenderer`, iOS Core Graphics; first 100 pages) and can then be cropped, filtered, merged and OCR'd like a scan |
+| Edit pages | Crop (`image_cropper`), rotate, drag-and-drop reorder, delete, add more pages (scanner, Flash Scan, gallery or PDF), **Book split** (cut a photo of an open book into two pages) |
+| Sign & stamp | Draw a signature once (saved as a transparent PNG), place it on any page by dragging, pinching to resize and rotating; date stamp and rubber-stamp texts (Attested, True copy, Original seen, Paid, Received, custom) in blue, red or black. The stamp is burnt into the page together with its rotation and filter |
 | Filters | Original, Auto color (white paper, shadows removed), Grayscale, Black & White (adaptive threshold), Whiteboard, Light text. Picked from live thumbnails of the page. **Adjust**: filter strength, brightness and contrast sliders |
 | Save | PDF or JPEG; quality Low / Medium / High; PDF page size *Fit to scan* (page shaped like the scan) or A4 / Letter / Legal (scan fitted on real paper); optional **PDF open password** (AES-128, standard security handler, see below); default name `Doc-dd-MM-yyyy-HH-mm-ss` |
 | Library | Thumbnail, name, pages, date, size; search, sort, rename, delete; **folders** (chips row, long-press a folder to rename/delete), **favourites**; multi-select to share, move, star, delete or merge several documents; metadata in drift |
@@ -26,7 +27,9 @@ without an internet connection.
 | OCR | Bangla: Tesseract `ben`; English: ML Kit; Both: Tesseract `ben+eng`; editable result, copy/share/.txt |
 | ID card mode | Document type: NID / smart card (ID-1, 85.6 × 53.98 mm, front and back) or passport (ID-3, 125 × 88 mm, photo page plus an optional second page), placed on one A4 page at real size |
 | App lock | PIN (4–8 digits, stored as a salted hash) with optional fingerprint / face unlock (`local_auth`); locks on launch and after 0 / 1 / 5 minutes in the background |
-| Settings | Language, theme, default format, quality and PDF page size, default OCR language, app lock |
+| Backup & restore | Settings → Backup: the whole library (documents, folders, favourites) as one `.zip` to Downloads / Files or the share sheet; restore adds everything the library does not have yet (see below) |
+| Receive files | Appears in the Android share sheet and "Open with" for images and PDFs (WhatsApp, Gmail, file managers) and as "Copy to Bangla Scanner" on iOS; the files open straight in the editor. Home screen **quick actions** (long-press the icon) for Scan and Flash Scan (`quick_actions`) |
+| Settings | Language, theme, default format, quality and PDF page size, default OCR language, app lock, backup |
 
 Everything runs on the device. No accounts, no cloud.
 
@@ -45,8 +48,11 @@ lib/
     utils/         formatters, user-friendly errors
     widgets/       dialogs, empty state, progress overlay
   features/
+    backup/        backup manifest + zip service, Backup & restore screen
     home/          home screen
-    scan/          scanner + gallery, draft document state
+    intents/       files received from other apps, home screen quick actions
+    scan/          scanner + gallery + PDF import, draft document state
+    stamps/        signature pad, stamp renderer, placement screen, compositor
     editor/        page list, page editor, filter previews
     export/        image pipeline, PDF builder, save service, share/save to device
     library/       document repository (folders, favourites, page rewrite), list, viewer, pages screen
@@ -99,7 +105,13 @@ icon) and `prod` (`com.codeinherit.banglascanner`). Every Android `flutter run`
   Android 9 (Android 10+ saves to Downloads through MediaStore, no permission
   needed).
 - `MainActivity` extends `FlutterFragmentActivity`, which `local_auth` needs
-  for the biometric prompt.
+  for the biometric prompt. It also hosts three small method channels:
+  `…/storage` (save to Downloads), `…/pdf` (`PdfPageRenderer.kt`, renders
+  PDF pages with `android.graphics.pdf.PdfRenderer`) and `…/received`
+  (`ReceivedFiles.kt`: copies the URIs of `ACTION_SEND`, `SEND_MULTIPLE` and
+  `VIEW` intents into the cache and hands the paths to Dart).
+- Quick action icons are the vector drawables `ic_shortcut_scan` /
+  `ic_shortcut_flash` in `res/drawable`.
 - The document scanner UI is provided by Google Play services. On a device
   that has never used it, Play services may download the scanner module
   once (requires internet the first time). Devices without Play services
@@ -123,6 +135,14 @@ flutter run
   lock).
 - SwiftyTesseract excludes the arm64 simulator architecture. On Apple
   Silicon Macs, run the simulator under Rosetta or test on a real device.
+- `AppDelegate.swift` registers three in-app plugins: `FileExporter` (Files
+  picker for "Save to phone"), `PdfPageRenderer.swift` (Core Graphics PDF
+  rendering) and `ReceivedFilesPlugin.swift`, which receives files through
+  the scene delegate (`CFBundleDocumentTypes` lists PDF and images, so the
+  app shows up under "Copy to Bangla Scanner" / "Open in"). There is no
+  share extension; the share sheet entry on iOS is the "Copy to" action.
+- Quick action icons are the template image sets `ic_shortcut_scan` /
+  `ic_shortcut_flash` in `Assets.xcassets`.
 
 ## How the Tesseract Bangla data is bundled
 
@@ -167,6 +187,23 @@ Reader, Chrome, iOS Preview and pypdf open the file with that password; the
 password itself is never stored (`isProtected` only flags the document, and
 re-saving or reordering pages asks for it again). The page JPEGs inside the
 app folder are not encrypted; the app lock covers them.
+
+## Backup format
+
+A backup is a plain zip (`BanglaScanner-Backup-dd-MM-yyyy-HH-mm.zip`) with
+`manifest.json` at the root and the document folders under `library/<id>/`
+exactly as they are stored in the app (`pages/page_001.jpg …`, `document.pdf`,
+`thumb.jpg`). JPEGs and PDFs are *stored* (not deflated), so a backup is as
+fast as a copy. The manifest (`BackupManifest`, `format:
+"banglascanner-backup"`, `version: 1`) carries the document rows (name,
+format, page count, size, dates, favourite, folder, protected flag) and the
+folders. The zip is written and read in a background isolate.
+
+Restore is additive: documents whose id is already in the library are left
+untouched, everything else is unpacked into a staging folder, checked
+(pages or PDF present, entry names may not leave `library/`) and moved into
+place. Folders are restored by id, so a document keeps its folder. The PIN
+and settings are not part of the backup.
 
 ## OCR pipeline
 
@@ -265,7 +302,7 @@ device is next online.
 
 ## Not in this version
 
-Cloud sync, accounts, signatures, annotations and AI features are planned for
+Cloud sync, accounts, free-hand annotations and AI features are planned for
 later versions.
 
 ## Licenses

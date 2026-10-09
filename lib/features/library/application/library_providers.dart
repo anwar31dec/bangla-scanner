@@ -42,6 +42,12 @@ final libraryDocumentsProvider = StreamProvider<List<DocumentRow>>((ref) async* 
   );
 });
 
+/// Every document, regardless of the library's search and filter (backup).
+final allDocumentsProvider = StreamProvider<List<DocumentRow>>((ref) async* {
+  final repo = await ref.watch(documentRepositoryProvider.future);
+  yield* repo.watchAll();
+});
+
 /// The few most recent documents shown on the home screen.
 final recentDocumentsProvider = StreamProvider<List<DocumentRow>>((ref) async* {
   final repo = await ref.watch(documentRepositoryProvider.future);

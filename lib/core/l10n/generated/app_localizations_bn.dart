@@ -21,7 +21,7 @@ class AppLocalizationsBn extends AppLocalizations {
   String get homeScanSubtitle => 'ক্যামেরা দিয়ে পাতা স্ক্যান করুন';
 
   @override
-  String get homeImport => 'গ্যালারি থেকে আনুন';
+  String get homeImport => 'ইমপোর্ট';
 
   @override
   String get homeFlashScan => 'ফ্ল্যাশ স্ক্যান';
@@ -884,4 +884,237 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get idCardOptional => 'ঐচ্ছিক';
+
+  @override
+  String get importFromGallery => 'গ্যালারি থেকে ছবি';
+
+  @override
+  String get importPdf => 'PDF ফাইল';
+
+  @override
+  String get importPdfHint =>
+      'PDF-এর প্রতিটি পাতা আলাদা পাতা হয়ে আসবে, যা ক্রপ, ফিল্টার ও OCR করা যাবে।';
+
+  @override
+  String get addFromPdf => 'PDF ফাইল থেকে';
+
+  @override
+  String get importingPdf => 'PDF পড়া হচ্ছে…';
+
+  @override
+  String importingPdfProgress(int done, int total) {
+    return '$total পাতার মধ্যে $done';
+  }
+
+  @override
+  String pdfTooManyPages(int max) {
+    return 'শুধু প্রথম $max পাতা ইমপোর্ট করা হয়েছে।';
+  }
+
+  @override
+  String get errorPdfLocked =>
+      'এই PDF-এ পাসওয়ার্ড আছে। আগে পাসওয়ার্ড সরিয়ে তারপর ইমপোর্ট করুন।';
+
+  @override
+  String get receivedTitle => 'ফাইল এসেছে';
+
+  @override
+  String get receivedAddOrNewBody =>
+      'একটি ডকুমেন্ট ইতিমধ্যে খোলা আছে। পাতাগুলো সেটিতে যোগ করবেন, নাকি নতুন ডকুমেন্ট শুরু করবেন?';
+
+  @override
+  String get receivedAddToCurrent => 'এটিতে যোগ করুন';
+
+  @override
+  String get receivedNewDocument => 'নতুন ডকুমেন্ট';
+
+  @override
+  String get receivedUnsupported =>
+      'এই ধরনের ফাইল সাপোর্ট করে না। ছবি বা PDF পাঠান।';
+
+  @override
+  String get settingsBackup => 'ব্যাকআপ';
+
+  @override
+  String get backupTitle => 'ব্যাকআপ ও রিস্টোর';
+
+  @override
+  String get backupSettingsHint =>
+      'সব ডকুমেন্ট এক ফাইলে রাখুন, বা ফিরিয়ে আনুন';
+
+  @override
+  String get backupIntro =>
+      'আপনার ডকুমেন্ট শুধু এই ফোনেই থাকে। ফোন বদলানো বা অ্যাপের ডেটা মুছার আগে ব্যাকআপ নিন, আর নতুন ফোনে রিস্টোর করুন।';
+
+  @override
+  String get backupCreate => 'ব্যাকআপ তৈরি করুন';
+
+  @override
+  String get backupCreateHint =>
+      'সব ডকুমেন্ট ও ফোল্ডার একটি .zip ফাইলে সংরক্ষণ হবে।';
+
+  @override
+  String backupStats(int count, String size) {
+    return '$countটি ডকুমেন্ট, $size';
+  }
+
+  @override
+  String get backupRestore => 'ব্যাকআপ থেকে রিস্টোর';
+
+  @override
+  String get backupRestoreHint =>
+      'একটি .zip ব্যাকআপ ফাইল বেছে নিন। লাইব্রেরিতে থাকা ডকুমেন্ট যেমন আছে তেমনই থাকবে।';
+
+  @override
+  String get backupCreating => 'ব্যাকআপ তৈরি হচ্ছে…';
+
+  @override
+  String backupProgress(int done, int total) {
+    return '$totalটির মধ্যে $done নম্বর ডকুমেন্ট';
+  }
+
+  @override
+  String backupReady(String size) {
+    return 'ব্যাকআপ তৈরি ($size)';
+  }
+
+  @override
+  String get backupSave => 'ফোনে সংরক্ষণ';
+
+  @override
+  String get backupSaveHintAndroid => 'Downloads/Bangla Scanner';
+
+  @override
+  String get backupSaveHintIos => 'Files অ্যাপে জায়গা বেছে নিন';
+
+  @override
+  String get backupShare => 'শেয়ার';
+
+  @override
+  String get backupShareHint => 'Google Drive, WhatsApp, ই-মেইল… এ পাঠান';
+
+  @override
+  String get backupEmpty => 'ব্যাকআপ নেওয়ার মতো কোনো ডকুমেন্ট নেই।';
+
+  @override
+  String get backupRestoring => 'রিস্টোর হচ্ছে…';
+
+  @override
+  String get backupRestoreConfirmTitle => 'এই ব্যাকআপ রিস্টোর করবেন?';
+
+  @override
+  String backupRestoreConfirmBody(int count, String date) {
+    return '$countটি ডকুমেন্ট, তৈরি $date। লাইব্রেরিতে যেগুলো আছে সেগুলো থাকবে; বাকিগুলো যোগ হবে।';
+  }
+
+  @override
+  String get restore => 'রিস্টোর';
+
+  @override
+  String backupRestored(int added, int skipped) {
+    return '$addedটি ডকুমেন্ট রিস্টোর হয়েছে, $skippedটি আগে থেকেই ছিল';
+  }
+
+  @override
+  String get backupInvalid => 'এটি বাংলা স্ক্যানারের ব্যাকআপ ফাইল নয়।';
+
+  @override
+  String get signTool => 'সই';
+
+  @override
+  String get stampSheetTitle => 'সই বা সিল';
+
+  @override
+  String get signatures => 'সই';
+
+  @override
+  String get drawSignature => 'নতুন সই আঁকুন';
+
+  @override
+  String get noSignatures =>
+      'এখনো কোনো সই সংরক্ষিত নেই। একবার এঁকে রাখলে যেকোনো পাতায় বসানো যাবে।';
+
+  @override
+  String get stamps => 'সিল';
+
+  @override
+  String get stampAttested => 'সত্যায়িত';
+
+  @override
+  String get stampTrueCopy => 'সত্য অনুলিপি';
+
+  @override
+  String get stampOriginalSeen => 'মূল কপি দেখা হয়েছে';
+
+  @override
+  String get stampPaid => 'পরিশোধিত';
+
+  @override
+  String get stampReceived => 'গৃহীত';
+
+  @override
+  String get stampCustom => 'নিজের লেখা…';
+
+  @override
+  String get stampCustomTitle => 'সিলের লেখা';
+
+  @override
+  String get stampText => 'লেখা';
+
+  @override
+  String get stampColorBlue => 'নীল';
+
+  @override
+  String get stampColorRed => 'লাল';
+
+  @override
+  String get stampColorBlack => 'কালো';
+
+  @override
+  String get stampBakeNote =>
+      'সই বা সিল বসালে পাতার ঘোরানো ও ফিল্টার স্থায়ীভাবে প্রয়োগ হয়ে যায়।';
+
+  @override
+  String get signaturePadTitle => 'আপনার সই আঁকুন';
+
+  @override
+  String get signaturePadHint =>
+      'বক্সের ভেতরে আঙুল দিয়ে সই করুন। পরে ব্যবহারের জন্য এটি সংরক্ষিত থাকবে।';
+
+  @override
+  String get saveSignature => 'সই ব্যবহার করুন';
+
+  @override
+  String get penThickness => 'কলম';
+
+  @override
+  String get undo => 'আগেরটা মুছুন';
+
+  @override
+  String get clear => 'সব মুছুন';
+
+  @override
+  String get signatureEmpty => 'আগে কিছু আঁকুন।';
+
+  @override
+  String get deleteSignatureTitle => 'এই সই মুছবেন?';
+
+  @override
+  String get deleteSignatureBody =>
+      'সংরক্ষিত সইয়ের তালিকা থেকে এটি মুছে যাবে। আগে সই করা পাতাগুলোর কিছু হবে না।';
+
+  @override
+  String get placeStampTitle => 'পাতায় বসান';
+
+  @override
+  String get placeStampHint => 'টেনে সরান। দুই আঙুলে ছোট-বড় বা ঘোরান।';
+
+  @override
+  String get stampSize => 'আকার';
+
+  @override
+  String get resetRotation => 'সোজা করুন';
+
+  @override
+  String get stampApplied => 'পাতায় যোগ হয়েছে';
 }

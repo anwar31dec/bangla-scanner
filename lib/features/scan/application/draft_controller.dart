@@ -31,13 +31,15 @@ class DraftController extends Notifier<DraftDocument?> {
   @override
   DraftDocument? build() => null;
 
-  /// Starts a new draft from freshly scanned or picked images.
-  Future<void> startNew(List<String> imagePaths) async {
+  /// Starts a new draft from freshly scanned or picked images. Pages start
+  /// with [filter] ([newPageFilter] for photos; pages rendered from a PDF
+  /// are already clean and keep [PageFilter.original]).
+  Future<void> startNew(List<String> imagePaths, {PageFilter filter = newPageFilter}) async {
     await discard();
     final paths = await ref.read(appPathsProvider.future);
     final dir = Directory(p.join(paths.workDir.path, _uuid.v4()));
     await dir.create(recursive: true);
-    state = DraftDocument(workDirPath: dir.path, pages: await _copyIn(dir, imagePaths, newPageFilter));
+    state = DraftDocument(workDirPath: dir.path, pages: await _copyIn(dir, imagePaths, filter));
   }
 
   /// Starts a draft from a library document so it can be edited.
@@ -73,11 +75,11 @@ class DraftController extends Notifier<DraftDocument?> {
     );
   }
 
-  /// Appends pages (from the scanner or gallery) to the current draft.
-  Future<void> addPages(List<String> imagePaths) async {
+  /// Appends pages (from the scanner, gallery or a PDF) to the current draft.
+  Future<void> addPages(List<String> imagePaths, {PageFilter filter = newPageFilter}) async {
     final draft = state;
-    if (draft == null) return startNew(imagePaths);
-    final added = await _copyIn(Directory(draft.workDirPath), imagePaths, newPageFilter);
+    if (draft == null) return startNew(imagePaths, filter: filter);
+    final added = await _copyIn(Directory(draft.workDirPath), imagePaths, filter);
     state = draft.copyWith(pages: [...draft.pages, ...added]);
   }
 
@@ -112,6 +114,26 @@ class DraftController extends Notifier<DraftDocument?> {
     final target = p.join(draft.workDirPath, '${_uuid.v4()}${p.extension(newImagePath)}');
     await File(newImagePath).copy(target);
     _updatePage(pageId, (pg) => pg.copyWith(imagePath: target, quarterTurns: 0, revision: pg.revision + 1));
+  }
+
+  /// Replaces a page's image with a version that already has its rotation,
+  /// filter and adjustments baked in (plus a signature or stamp), so the
+  /// page continues from [PageFilter.original] with no pending edits.
+  Future<void> replaceFlattened(String pageId, Uint8List jpeg) async {
+    final draft = state;
+    if (draft == null) return;
+    final target = p.join(draft.workDirPath, '${_uuid.v4()}.jpg');
+    await File(target).writeAsBytes(jpeg, flush: true);
+    _updatePage(
+      pageId,
+      (pg) => pg.copyWith(
+        imagePath: target,
+        quarterTurns: 0,
+        filter: PageFilter.original,
+        adjustments: PageAdjustments.none,
+        revision: pg.revision + 1,
+      ),
+    );
   }
 
   /// Book mode: cuts the page into two pages (left/right, or top/bottom for

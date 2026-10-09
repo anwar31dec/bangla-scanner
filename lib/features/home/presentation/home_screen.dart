@@ -52,7 +52,7 @@ class HomeScreen extends ConsumerWidget {
                   children: [
                     Expanded(
                       child: HomeActionTile(
-                        icon: Icons.photo_library_outlined,
+                        icon: Icons.file_download_outlined,
                         label: l10n.homeImport,
                         onPressed: () => ScanActions.importNew(context, ref),
                       ),

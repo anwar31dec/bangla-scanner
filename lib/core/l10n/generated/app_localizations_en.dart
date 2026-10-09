@@ -21,7 +21,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeScanSubtitle => 'Use the camera to scan pages';
 
   @override
-  String get homeImport => 'Import from Gallery';
+  String get homeImport => 'Import';
 
   @override
   String get homeFlashScan => 'Flash Scan';
@@ -889,4 +889,237 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get idCardOptional => 'Optional';
+
+  @override
+  String get importFromGallery => 'Photos from gallery';
+
+  @override
+  String get importPdf => 'PDF file';
+
+  @override
+  String get importPdfHint =>
+      'Each page of the PDF becomes a page you can crop, filter and OCR.';
+
+  @override
+  String get addFromPdf => 'From a PDF file';
+
+  @override
+  String get importingPdf => 'Reading PDF…';
+
+  @override
+  String importingPdfProgress(int done, int total) {
+    return 'Page $done of $total';
+  }
+
+  @override
+  String pdfTooManyPages(int max) {
+    return 'Only the first $max pages were imported.';
+  }
+
+  @override
+  String get errorPdfLocked =>
+      'This PDF has a password. Remove the password first, then import it.';
+
+  @override
+  String get receivedTitle => 'Files received';
+
+  @override
+  String get receivedAddOrNewBody =>
+      'A document is already open. Add these pages to it, or start a new document?';
+
+  @override
+  String get receivedAddToCurrent => 'Add to current';
+
+  @override
+  String get receivedNewDocument => 'New document';
+
+  @override
+  String get receivedUnsupported =>
+      'That file type is not supported. Send photos or a PDF.';
+
+  @override
+  String get settingsBackup => 'Backup';
+
+  @override
+  String get backupTitle => 'Backup & restore';
+
+  @override
+  String get backupSettingsHint =>
+      'Save all documents to one file, or bring them back';
+
+  @override
+  String get backupIntro =>
+      'Your documents live only on this phone. Make a backup before changing phones or clearing the app, and restore it on the new phone.';
+
+  @override
+  String get backupCreate => 'Create backup';
+
+  @override
+  String get backupCreateHint =>
+      'Saves every document and folder in one .zip file.';
+
+  @override
+  String backupStats(int count, String size) {
+    return '$count documents, $size';
+  }
+
+  @override
+  String get backupRestore => 'Restore from backup';
+
+  @override
+  String get backupRestoreHint =>
+      'Pick a .zip backup file. Documents already in the library are kept.';
+
+  @override
+  String get backupCreating => 'Creating backup…';
+
+  @override
+  String backupProgress(int done, int total) {
+    return 'Document $done of $total';
+  }
+
+  @override
+  String backupReady(String size) {
+    return 'Backup ready ($size)';
+  }
+
+  @override
+  String get backupSave => 'Save to phone';
+
+  @override
+  String get backupSaveHintAndroid => 'Downloads/Bangla Scanner';
+
+  @override
+  String get backupSaveHintIos => 'Choose a place in the Files app';
+
+  @override
+  String get backupShare => 'Share';
+
+  @override
+  String get backupShareHint => 'Send to Google Drive, WhatsApp, e-mail…';
+
+  @override
+  String get backupEmpty => 'There are no documents to back up.';
+
+  @override
+  String get backupRestoring => 'Restoring…';
+
+  @override
+  String get backupRestoreConfirmTitle => 'Restore this backup?';
+
+  @override
+  String backupRestoreConfirmBody(int count, String date) {
+    return '$count documents, made on $date. Documents already in the library are kept; the others are added.';
+  }
+
+  @override
+  String get restore => 'Restore';
+
+  @override
+  String backupRestored(int added, int skipped) {
+    return '$added documents restored, $skipped already present';
+  }
+
+  @override
+  String get backupInvalid => 'This is not a Bangla Scanner backup file.';
+
+  @override
+  String get signTool => 'Sign';
+
+  @override
+  String get stampSheetTitle => 'Signature or stamp';
+
+  @override
+  String get signatures => 'Signatures';
+
+  @override
+  String get drawSignature => 'Draw new';
+
+  @override
+  String get noSignatures =>
+      'No saved signatures yet. Draw one and use it on any page.';
+
+  @override
+  String get stamps => 'Stamps';
+
+  @override
+  String get stampAttested => 'Attested';
+
+  @override
+  String get stampTrueCopy => 'True copy';
+
+  @override
+  String get stampOriginalSeen => 'Original seen';
+
+  @override
+  String get stampPaid => 'Paid';
+
+  @override
+  String get stampReceived => 'Received';
+
+  @override
+  String get stampCustom => 'Custom text…';
+
+  @override
+  String get stampCustomTitle => 'Stamp text';
+
+  @override
+  String get stampText => 'Text';
+
+  @override
+  String get stampColorBlue => 'Blue';
+
+  @override
+  String get stampColorRed => 'Red';
+
+  @override
+  String get stampColorBlack => 'Black';
+
+  @override
+  String get stampBakeNote =>
+      'The page\'s rotation and filter are applied permanently when a signature or stamp is added.';
+
+  @override
+  String get signaturePadTitle => 'Draw your signature';
+
+  @override
+  String get signaturePadHint =>
+      'Sign with your finger inside the box. It is saved for later use.';
+
+  @override
+  String get saveSignature => 'Use signature';
+
+  @override
+  String get penThickness => 'Pen';
+
+  @override
+  String get undo => 'Undo';
+
+  @override
+  String get clear => 'Clear';
+
+  @override
+  String get signatureEmpty => 'Draw something first.';
+
+  @override
+  String get deleteSignatureTitle => 'Delete this signature?';
+
+  @override
+  String get deleteSignatureBody =>
+      'It is removed from the saved signatures. Pages already signed are not affected.';
+
+  @override
+  String get placeStampTitle => 'Place on page';
+
+  @override
+  String get placeStampHint => 'Drag to move. Pinch to resize or rotate.';
+
+  @override
+  String get stampSize => 'Size';
+
+  @override
+  String get resetRotation => 'Straighten';
+
+  @override
+  String get stampApplied => 'Added to the page';
 }

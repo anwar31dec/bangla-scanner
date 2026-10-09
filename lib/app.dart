@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/l10n/l10n.dart';
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
+import 'features/intents/application/intent_handler.dart';
 import 'features/lock/application/lock_controller.dart';
 import 'features/lock/presentation/lock_screen.dart';
 import 'features/settings/application/settings_controller.dart';
@@ -32,7 +33,7 @@ class BanglaScannerApp extends ConsumerWidget {
         GlobalCupertinoLocalizations.delegate,
       ],
       routerConfig: router,
-      builder: (context, child) => LockGate(child: child ?? const SizedBox.shrink()),
+      builder: (context, child) => IntentHandler(child: LockGate(child: child ?? const SizedBox.shrink())),
     );
   }
 }

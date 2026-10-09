@@ -5,7 +5,19 @@ import 'package:flutter/services.dart';
 import '../l10n/generated/app_localizations.dart';
 
 /// Kinds of failures the UI knows how to explain to the user.
-enum AppErrorKind { lowStorage, corruptFile, missingFile, ocrFailed, generic }
+enum AppErrorKind {
+  lowStorage,
+  corruptFile,
+  missingFile,
+  ocrFailed,
+
+  /// A PDF that needs a password to be opened.
+  pdfLocked,
+
+  /// The chosen file is not a backup made by this app.
+  invalidBackup,
+  generic,
+}
 
 /// An error with a user friendly, localized explanation.
 class AppException implements Exception {
@@ -23,9 +35,12 @@ class AppException implements Exception {
       if (code == 28) return AppException(AppErrorKind.lowStorage, error);
       if (code == 2) return AppException(AppErrorKind.missingFile, error);
     }
-    if (error is PlatformException &&
-        (error.message?.toLowerCase().contains('no space') ?? false)) {
-      return AppException(AppErrorKind.lowStorage, error);
+    if (error is PlatformException) {
+      if (error.message?.toLowerCase().contains('no space') ?? false) {
+        return AppException(AppErrorKind.lowStorage, error);
+      }
+      if (error.code == 'pdf_locked') return AppException(AppErrorKind.pdfLocked, error);
+      if (error.code == 'pdf_invalid') return AppException(AppErrorKind.corruptFile, error);
     }
     return AppException(AppErrorKind.generic, error);
   }
@@ -35,6 +50,8 @@ class AppException implements Exception {
         AppErrorKind.corruptFile => l10n.errorCorruptFile,
         AppErrorKind.missingFile => l10n.documentMissing,
         AppErrorKind.ocrFailed => l10n.ocrFailed,
+        AppErrorKind.pdfLocked => l10n.errorPdfLocked,
+        AppErrorKind.invalidBackup => l10n.backupInvalid,
         AppErrorKind.generic => l10n.errorGeneric,
       };
 

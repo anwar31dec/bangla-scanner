@@ -1,6 +1,7 @@
 package com.codeinherit.banglascanner
 
 import android.content.ContentValues
+import android.content.Intent
 import android.media.MediaScannerConnection
 import android.os.Build
 import android.os.Environment
@@ -12,10 +13,18 @@ import java.io.File
 import java.io.FileInputStream
 
 class MainActivity : FlutterFragmentActivity() {
+    private var pdfRenderer: PdfPageRenderer? = null
+    private var receivedFiles: ReceivedFiles? = null
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
-        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL).setMethodCallHandler { call, result ->
+        val messenger = flutterEngine.dartExecutor.binaryMessenger
+        pdfRenderer = PdfPageRenderer(messenger)
+        receivedFiles = ReceivedFiles(applicationContext, messenger).also {
+            // Files the app was launched with.
+            if (it.handle(intent)) intent = Intent(Intent.ACTION_MAIN)
+        }
+        MethodChannel(messenger, CHANNEL).setMethodCallHandler { call, result ->
             when (call.method) {
                 // Only Android 9 and below need WRITE_EXTERNAL_STORAGE.
                 "needsStoragePermission" -> result.success(Build.VERSION.SDK_INT < Build.VERSION_CODES.Q)
@@ -40,6 +49,24 @@ class MainActivity : FlutterFragmentActivity() {
                 else -> result.notImplemented()
             }
         }
+    }
+
+    /** Files shared while the app is already running (launchMode singleTop). */
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        if (receivedFiles?.handle(intent) == true) {
+            setIntent(Intent(Intent.ACTION_MAIN))
+        } else {
+            setIntent(intent)
+        }
+    }
+
+    override fun cleanUpFlutterEngine(flutterEngine: FlutterEngine) {
+        pdfRenderer?.dispose()
+        pdfRenderer = null
+        receivedFiles?.dispose()
+        receivedFiles = null
+        super.cleanUpFlutterEngine(flutterEngine)
     }
 
     /**

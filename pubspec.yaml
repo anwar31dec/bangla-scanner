@@ -1,7 +1,7 @@
 name: banglascanner
 description: "Bangla Scanner (বাংলা স্ক্যানার) - an offline document scanner for Bengali speakers."
 publish_to: 'none'
-version: 1.0.9+4
+version: 1.2.0+5
 
 environment:
   sdk: ^3.12.0
@@ -51,6 +51,9 @@ dependencies:
   firebase_analytics: ^12.6.0
   local_auth: ^3.0.2
   crypto: ^3.0.7
+  archive: ^4.3.0
+  file_picker: ^13.1.0
+  quick_actions: ^1.1.1
 
 dev_dependencies:
   flutter_test:

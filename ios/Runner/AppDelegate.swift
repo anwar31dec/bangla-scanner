@@ -15,6 +15,12 @@ import UIKit
     if let registrar = engineBridge.pluginRegistry.registrar(forPlugin: "FileExporter") {
       FileExporter.register(with: registrar)
     }
+    if let registrar = engineBridge.pluginRegistry.registrar(forPlugin: "PdfPageRenderer") {
+      PdfPageRenderer.register(with: registrar)
+    }
+    if let registrar = engineBridge.pluginRegistry.registrar(forPlugin: "ReceivedFilesPlugin") {
+      ReceivedFilesPlugin.register(with: registrar)
+    }
   }
 }
 

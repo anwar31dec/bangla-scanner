@@ -125,7 +125,7 @@ abstract class AppLocalizations {
   /// No description provided for @homeImport.
   ///
   /// In en, this message translates to:
-  /// **'Import from Gallery'**
+  /// **'Import'**
   String get homeImport;
 
   /// No description provided for @homeFlashScan.
@@ -1561,6 +1561,420 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Optional'**
   String get idCardOptional;
+
+  /// No description provided for @importFromGallery.
+  ///
+  /// In en, this message translates to:
+  /// **'Photos from gallery'**
+  String get importFromGallery;
+
+  /// No description provided for @importPdf.
+  ///
+  /// In en, this message translates to:
+  /// **'PDF file'**
+  String get importPdf;
+
+  /// No description provided for @importPdfHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Each page of the PDF becomes a page you can crop, filter and OCR.'**
+  String get importPdfHint;
+
+  /// No description provided for @addFromPdf.
+  ///
+  /// In en, this message translates to:
+  /// **'From a PDF file'**
+  String get addFromPdf;
+
+  /// No description provided for @importingPdf.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading PDF…'**
+  String get importingPdf;
+
+  /// No description provided for @importingPdfProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Page {done} of {total}'**
+  String importingPdfProgress(int done, int total);
+
+  /// No description provided for @pdfTooManyPages.
+  ///
+  /// In en, this message translates to:
+  /// **'Only the first {max} pages were imported.'**
+  String pdfTooManyPages(int max);
+
+  /// No description provided for @errorPdfLocked.
+  ///
+  /// In en, this message translates to:
+  /// **'This PDF has a password. Remove the password first, then import it.'**
+  String get errorPdfLocked;
+
+  /// No description provided for @receivedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Files received'**
+  String get receivedTitle;
+
+  /// No description provided for @receivedAddOrNewBody.
+  ///
+  /// In en, this message translates to:
+  /// **'A document is already open. Add these pages to it, or start a new document?'**
+  String get receivedAddOrNewBody;
+
+  /// No description provided for @receivedAddToCurrent.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to current'**
+  String get receivedAddToCurrent;
+
+  /// No description provided for @receivedNewDocument.
+  ///
+  /// In en, this message translates to:
+  /// **'New document'**
+  String get receivedNewDocument;
+
+  /// No description provided for @receivedUnsupported.
+  ///
+  /// In en, this message translates to:
+  /// **'That file type is not supported. Send photos or a PDF.'**
+  String get receivedUnsupported;
+
+  /// No description provided for @settingsBackup.
+  ///
+  /// In en, this message translates to:
+  /// **'Backup'**
+  String get settingsBackup;
+
+  /// No description provided for @backupTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Backup & restore'**
+  String get backupTitle;
+
+  /// No description provided for @backupSettingsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Save all documents to one file, or bring them back'**
+  String get backupSettingsHint;
+
+  /// No description provided for @backupIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Your documents live only on this phone. Make a backup before changing phones or clearing the app, and restore it on the new phone.'**
+  String get backupIntro;
+
+  /// No description provided for @backupCreate.
+  ///
+  /// In en, this message translates to:
+  /// **'Create backup'**
+  String get backupCreate;
+
+  /// No description provided for @backupCreateHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Saves every document and folder in one .zip file.'**
+  String get backupCreateHint;
+
+  /// No description provided for @backupStats.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} documents, {size}'**
+  String backupStats(int count, String size);
+
+  /// No description provided for @backupRestore.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore from backup'**
+  String get backupRestore;
+
+  /// No description provided for @backupRestoreHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick a .zip backup file. Documents already in the library are kept.'**
+  String get backupRestoreHint;
+
+  /// No description provided for @backupCreating.
+  ///
+  /// In en, this message translates to:
+  /// **'Creating backup…'**
+  String get backupCreating;
+
+  /// No description provided for @backupProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Document {done} of {total}'**
+  String backupProgress(int done, int total);
+
+  /// No description provided for @backupReady.
+  ///
+  /// In en, this message translates to:
+  /// **'Backup ready ({size})'**
+  String backupReady(String size);
+
+  /// No description provided for @backupSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save to phone'**
+  String get backupSave;
+
+  /// No description provided for @backupSaveHintAndroid.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloads/Bangla Scanner'**
+  String get backupSaveHintAndroid;
+
+  /// No description provided for @backupSaveHintIos.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a place in the Files app'**
+  String get backupSaveHintIos;
+
+  /// No description provided for @backupShare.
+  ///
+  /// In en, this message translates to:
+  /// **'Share'**
+  String get backupShare;
+
+  /// No description provided for @backupShareHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Send to Google Drive, WhatsApp, e-mail…'**
+  String get backupShareHint;
+
+  /// No description provided for @backupEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'There are no documents to back up.'**
+  String get backupEmpty;
+
+  /// No description provided for @backupRestoring.
+  ///
+  /// In en, this message translates to:
+  /// **'Restoring…'**
+  String get backupRestoring;
+
+  /// No description provided for @backupRestoreConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore this backup?'**
+  String get backupRestoreConfirmTitle;
+
+  /// No description provided for @backupRestoreConfirmBody.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} documents, made on {date}. Documents already in the library are kept; the others are added.'**
+  String backupRestoreConfirmBody(int count, String date);
+
+  /// No description provided for @restore.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore'**
+  String get restore;
+
+  /// No description provided for @backupRestored.
+  ///
+  /// In en, this message translates to:
+  /// **'{added} documents restored, {skipped} already present'**
+  String backupRestored(int added, int skipped);
+
+  /// No description provided for @backupInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'This is not a Bangla Scanner backup file.'**
+  String get backupInvalid;
+
+  /// No description provided for @signTool.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign'**
+  String get signTool;
+
+  /// No description provided for @stampSheetTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Signature or stamp'**
+  String get stampSheetTitle;
+
+  /// No description provided for @signatures.
+  ///
+  /// In en, this message translates to:
+  /// **'Signatures'**
+  String get signatures;
+
+  /// No description provided for @drawSignature.
+  ///
+  /// In en, this message translates to:
+  /// **'Draw new'**
+  String get drawSignature;
+
+  /// No description provided for @noSignatures.
+  ///
+  /// In en, this message translates to:
+  /// **'No saved signatures yet. Draw one and use it on any page.'**
+  String get noSignatures;
+
+  /// No description provided for @stamps.
+  ///
+  /// In en, this message translates to:
+  /// **'Stamps'**
+  String get stamps;
+
+  /// No description provided for @stampAttested.
+  ///
+  /// In en, this message translates to:
+  /// **'Attested'**
+  String get stampAttested;
+
+  /// No description provided for @stampTrueCopy.
+  ///
+  /// In en, this message translates to:
+  /// **'True copy'**
+  String get stampTrueCopy;
+
+  /// No description provided for @stampOriginalSeen.
+  ///
+  /// In en, this message translates to:
+  /// **'Original seen'**
+  String get stampOriginalSeen;
+
+  /// No description provided for @stampPaid.
+  ///
+  /// In en, this message translates to:
+  /// **'Paid'**
+  String get stampPaid;
+
+  /// No description provided for @stampReceived.
+  ///
+  /// In en, this message translates to:
+  /// **'Received'**
+  String get stampReceived;
+
+  /// No description provided for @stampCustom.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom text…'**
+  String get stampCustom;
+
+  /// No description provided for @stampCustomTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Stamp text'**
+  String get stampCustomTitle;
+
+  /// No description provided for @stampText.
+  ///
+  /// In en, this message translates to:
+  /// **'Text'**
+  String get stampText;
+
+  /// No description provided for @stampColorBlue.
+  ///
+  /// In en, this message translates to:
+  /// **'Blue'**
+  String get stampColorBlue;
+
+  /// No description provided for @stampColorRed.
+  ///
+  /// In en, this message translates to:
+  /// **'Red'**
+  String get stampColorRed;
+
+  /// No description provided for @stampColorBlack.
+  ///
+  /// In en, this message translates to:
+  /// **'Black'**
+  String get stampColorBlack;
+
+  /// No description provided for @stampBakeNote.
+  ///
+  /// In en, this message translates to:
+  /// **'The page\'s rotation and filter are applied permanently when a signature or stamp is added.'**
+  String get stampBakeNote;
+
+  /// No description provided for @signaturePadTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Draw your signature'**
+  String get signaturePadTitle;
+
+  /// No description provided for @signaturePadHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign with your finger inside the box. It is saved for later use.'**
+  String get signaturePadHint;
+
+  /// No description provided for @saveSignature.
+  ///
+  /// In en, this message translates to:
+  /// **'Use signature'**
+  String get saveSignature;
+
+  /// No description provided for @penThickness.
+  ///
+  /// In en, this message translates to:
+  /// **'Pen'**
+  String get penThickness;
+
+  /// No description provided for @undo.
+  ///
+  /// In en, this message translates to:
+  /// **'Undo'**
+  String get undo;
+
+  /// No description provided for @clear.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get clear;
+
+  /// No description provided for @signatureEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Draw something first.'**
+  String get signatureEmpty;
+
+  /// No description provided for @deleteSignatureTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this signature?'**
+  String get deleteSignatureTitle;
+
+  /// No description provided for @deleteSignatureBody.
+  ///
+  /// In en, this message translates to:
+  /// **'It is removed from the saved signatures. Pages already signed are not affected.'**
+  String get deleteSignatureBody;
+
+  /// No description provided for @placeStampTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Place on page'**
+  String get placeStampTitle;
+
+  /// No description provided for @placeStampHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Drag to move. Pinch to resize or rotate.'**
+  String get placeStampHint;
+
+  /// No description provided for @stampSize.
+  ///
+  /// In en, this message translates to:
+  /// **'Size'**
+  String get stampSize;
+
+  /// No description provided for @resetRotation.
+  ///
+  /// In en, this message translates to:
+  /// **'Straighten'**
+  String get resetRotation;
+
+  /// No description provided for @stampApplied.
+  ///
+  /// In en, this message translates to:
+  /// **'Added to the page'**
+  String get stampApplied;
 }
 
 class _AppLocalizationsDelegate

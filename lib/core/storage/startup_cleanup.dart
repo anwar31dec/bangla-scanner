@@ -15,6 +15,8 @@ Future<void> runStartupCleanup(AppPaths paths) async {
 
   await wipe(paths.workDir);
   await wipe(paths.shareDir);
+  await wipe(paths.backupDir);
+  await wipe(paths.receivedDir);
   try {
     if (await paths.libraryDir.exists()) {
       await for (final entry in paths.libraryDir.list()) {

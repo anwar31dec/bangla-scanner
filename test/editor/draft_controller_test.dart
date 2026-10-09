@@ -111,4 +111,32 @@ void main() {
     expect(container.read(draftProvider), isNull);
     expect(Directory(dir).existsSync(), isFalse);
   });
+
+  test('PDF pages can start with the original filter', () async {
+    await controller().startNew(sources, filter: PageFilter.original);
+    expect(container.read(draftProvider)!.pages.every((pg) => pg.filter == PageFilter.original), isTrue);
+    await controller().addPages([sources.first]);
+    expect(container.read(draftProvider)!.pages.last.filter, DraftController.newPageFilter);
+  });
+
+  test('replaceFlattened writes the new image and clears pending edits', () async {
+    await controller().startNew(sources);
+    final id = order().first;
+    controller().rotate(id);
+    controller().setFilter(id, PageFilter.blackWhite);
+    final before = container.read(draftProvider)!.pages.first;
+
+    final flattened = fakeDocumentJpeg(width: 80, height: 60);
+    await controller().replaceFlattened(id, flattened);
+
+    final after = container.read(draftProvider)!.pages.first;
+    expect(after.id, id);
+    expect(after.imagePath, isNot(before.imagePath));
+    expect(after.imagePath, startsWith(container.read(draftProvider)!.workDirPath));
+    expect(File(after.imagePath).readAsBytesSync(), flattened);
+    expect(after.quarterTurns, 0);
+    expect(after.filter, PageFilter.original);
+    expect(after.adjustments.isNeutral, isTrue);
+    expect(after.revision, before.revision + 1);
+  });
 }

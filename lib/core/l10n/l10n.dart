@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 
+import '../../features/stamps/data/stamp_renderer.dart';
 import '../models/enums.dart';
 import 'generated/app_localizations.dart';
 
@@ -52,6 +53,12 @@ extension EnumLabels on AppLocalizations {
         LockDelay.immediately => lockImmediately,
         LockDelay.oneMinute => lockAfterOneMinute,
         LockDelay.fiveMinutes => lockAfterFiveMinutes,
+      };
+
+  String stampColorLabel(StampColor c) => switch (c) {
+        StampColor.blue => stampColorBlue,
+        StampColor.red => stampColorRed,
+        StampColor.black => stampColorBlack,
       };
 
   String cardKindLabel(CardKind k) => switch (k) {

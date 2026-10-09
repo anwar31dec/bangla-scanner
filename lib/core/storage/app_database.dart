@@ -146,6 +146,12 @@ class AppDatabase extends _$AppDatabase {
   Future<DocumentRow?> getDocument(String id) =>
       (select(documents)..where((d) => d.id.equals(id))).getSingleOrNull();
 
+  /// Every document, oldest first (backup order).
+  Future<List<DocumentRow>> allDocuments() =>
+      (select(documents)..orderBy([(d) => OrderingTerm.asc(d.createdAt), (d) => OrderingTerm.asc(d.rowId)])).get();
+
+  Future<List<FolderRow>> allFolders() => select(folders).get();
+
   Future<void> upsertDocument(DocumentsCompanion row) => into(documents).insertOnConflictUpdate(row);
 
   Future<void> renameDocument(String id, String name) =>

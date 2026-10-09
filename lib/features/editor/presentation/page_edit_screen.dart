@@ -14,12 +14,34 @@ import '../../../core/widgets/dialogs.dart';
 import '../../export/data/image_processing.dart';
 import '../../scan/application/draft_controller.dart';
 import '../../scan/data/draft_document.dart';
+import '../../stamps/data/stamp_compositor.dart';
+import '../../stamps/presentation/stamp_picker_sheet.dart';
+import '../../stamps/presentation/stamp_placement_screen.dart';
 import 'page_preview.dart';
 
 /// Top-level on purpose: a closure created inside the State would carry the
 /// State with it, and that cannot be sent to another isolate.
 Future<Uint8List> _rotateInBackground(Uint8List bytes, int quarterTurns) =>
     Isolate.run(() => ImageProcessing.rotateJpeg(bytes, quarterTurns));
+
+Future<Uint8List> _stampInBackground(
+  Uint8List page,
+  Uint8List stamp,
+  StampPlacement placement,
+  int quarterTurns,
+  PageFilter filter,
+  PageAdjustments adjustments,
+) =>
+    Isolate.run(
+      () => StampCompositor.apply(
+        page,
+        stamp,
+        placement: placement,
+        quarterTurns: quarterTurns,
+        filter: filter,
+        adjustments: adjustments,
+      ),
+    );
 
 /// Edits one page: crop, rotate, filter, adjust (strength, brightness,
 /// contrast), book split, delete. Swipe to move between pages.
@@ -86,6 +108,39 @@ class _PageEditScreenState extends ConsumerState<PageEditScreen> {
       if (cropped != null) await ref.read(draftProvider.notifier).replaceImage(page.id, cropped.path);
     } catch (_) {
       if (mounted) showSnack(context, l10n.cropFailed);
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  /// Signature or stamp: choose one, place it, then burn it into the page
+  /// together with the pending rotation, filter and adjustments.
+  Future<void> _sign(DraftPage page) async {
+    final l10n = context.l10n;
+    final stamp = await showStampPicker(context);
+    if (stamp == null || !mounted) return;
+    final placement = await Navigator.of(context).push<StampPlacement>(
+      MaterialPageRoute(
+        fullscreenDialog: true,
+        builder: (context) => StampPlacementScreen(page: page, stampPng: stamp),
+      ),
+    );
+    if (placement == null || !mounted) return;
+    setState(() => _busy = true);
+    try {
+      final bytes = await File(page.imagePath).readAsBytes();
+      final flattened = await _stampInBackground(
+        bytes,
+        stamp,
+        placement,
+        page.quarterTurns,
+        page.filter,
+        page.adjustments,
+      );
+      await ref.read(draftProvider.notifier).replaceFlattened(page.id, flattened);
+      if (mounted) showSnack(context, l10n.stampApplied);
+    } catch (e) {
+      if (mounted) showError(context, e);
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -182,29 +237,43 @@ class _PageEditScreenState extends ConsumerState<PageEditScreen> {
           padding: const EdgeInsets.symmetric(vertical: 8),
           color: theme.colorScheme.surfaceContainer,
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              _ToolButton(icon: Icons.crop, label: l10n.crop, onPressed: _busy ? null : () => _crop(page)),
-              _ToolButton(
-                icon: Icons.rotate_right,
-                label: l10n.rotate,
-                onPressed: _busy ? null : () => notifier.rotate(page.id),
+              Expanded(child: _ToolButton(icon: Icons.crop, label: l10n.crop, onPressed: _busy ? null : () => _crop(page))),
+              Expanded(
+                child: _ToolButton(
+                  icon: Icons.rotate_right,
+                  label: l10n.rotate,
+                  onPressed: _busy ? null : () => notifier.rotate(page.id),
+                ),
               ),
-              _ToolButton(
-                icon: Icons.tune,
-                label: l10n.adjust,
-                selected: _adjusting,
-                onPressed: _busy ? null : () => setState(() => _adjusting = !_adjusting),
+              Expanded(
+                child: _ToolButton(
+                  icon: Icons.tune,
+                  label: l10n.adjust,
+                  selected: _adjusting,
+                  onPressed: _busy ? null : () => setState(() => _adjusting = !_adjusting),
+                ),
               ),
-              _ToolButton(
-                icon: Icons.vertical_split_outlined,
-                label: l10n.bookSplit,
-                onPressed: _busy ? null : () => _split(page),
+              Expanded(
+                child: _ToolButton(
+                  icon: Icons.draw_outlined,
+                  label: l10n.signTool,
+                  onPressed: _busy ? null : () => _sign(page),
+                ),
               ),
-              _ToolButton(
-                icon: Icons.delete_outline,
-                label: l10n.delete,
-                onPressed: _busy ? null : () => _delete(page, pages.length),
+              Expanded(
+                child: _ToolButton(
+                  icon: Icons.vertical_split_outlined,
+                  label: l10n.bookSplit,
+                  onPressed: _busy ? null : () => _split(page),
+                ),
+              ),
+              Expanded(
+                child: _ToolButton(
+                  icon: Icons.delete_outline,
+                  label: l10n.delete,
+                  onPressed: _busy ? null : () => _delete(page, pages.length),
+                ),
               ),
             ],
           ),
@@ -381,9 +450,9 @@ class _ToolButton extends StatelessWidget {
       borderRadius: BorderRadius.circular(12),
       onTap: onPressed,
       child: ConstrainedBox(
-        constraints: const BoxConstraints(minWidth: 64, minHeight: 64),
+        constraints: const BoxConstraints(minHeight: 64),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 4),
+          padding: const EdgeInsets.symmetric(horizontal: 2),
           child: Column(
             // Without this the bar grows to the full screen height and hides
             // the page.

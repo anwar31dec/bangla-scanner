@@ -33,6 +33,16 @@ class AppPaths {
   /// Folder flutter_tesseract_ocr reads language models from.
   Directory get tessdataDir => Directory(p.join(documentsDir.path, 'tessdata'));
 
+  /// Saved signatures (`<uuid>.png`, transparent background).
+  Directory get signaturesDir => Directory(p.join(documentsDir.path, 'signatures'));
+
+  /// Backup zips being written and backups being unpacked. Cleared on start.
+  Directory get backupDir => Directory(p.join(tempDir.path, 'backup'));
+
+  /// Files handed to the app by other apps (share / "Open with"), copied
+  /// here by the platform side until the editor has taken them over.
+  Directory get receivedDir => Directory(p.join(tempDir.path, 'received'));
+
   String relative(String absolute) => p.relative(absolute, from: documentsDir.path);
 
   String absolute(String relative) => p.join(documentsDir.path, relative);

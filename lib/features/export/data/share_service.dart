@@ -40,6 +40,19 @@ class ShareService {
     );
   }
 
+  /// Shares arbitrary files (e.g. a backup zip) through the system sheet.
+  Future<void> shareFiles(List<File> files, {String? subject, Rect? origin}) => SharePlus.instance.share(
+        ShareParams(
+          files: [for (final f in files) XFile(f.path, mimeType: _mimeOf(f.path))],
+          subject: subject,
+          sharePositionOrigin: origin,
+        ),
+      );
+
+  /// Saves arbitrary files (e.g. a backup zip) to Downloads/Bangla Scanner
+  /// (Android) or a location the user picks in the Files app (iOS).
+  Future<SaveDestination> saveFilesToDevice(List<File> files) => _saveToDevice(files);
+
   /// Shares plain text (OCR result).
   Future<void> shareText(String text, {String? subject, Rect? origin}) =>
       SharePlus.instance.share(ShareParams(text: text, subject: subject, sharePositionOrigin: origin));
@@ -112,6 +125,8 @@ class ShareService {
         '.pdf' => 'application/pdf',
         '.jpg' || '.jpeg' => 'image/jpeg',
         '.txt' => 'text/plain',
+        '.zip' => 'application/zip',
+        '.png' => 'image/png',
         _ => 'application/octet-stream',
       };
 }

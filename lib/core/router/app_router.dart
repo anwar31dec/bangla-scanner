@@ -1,6 +1,8 @@
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../features/backup/presentation/backup_screen.dart';
 import '../../features/editor/presentation/editor_screen.dart';
 import '../../features/editor/presentation/page_edit_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
@@ -15,6 +17,7 @@ import '../../features/settings/presentation/settings_screen.dart';
 abstract final class Routes {
   static const home = '/';
   static const settings = '/settings';
+  static const backup = '/settings/backup';
   static const editor = '/editor';
   static const library = '/library';
   static const idCard = '/id-card';
@@ -26,14 +29,24 @@ abstract final class Routes {
   static String pageEditPath(int index) => '/editor/page/$index';
 }
 
+/// The app's one Navigator. Code that runs outside the widget tree (quick
+/// actions, files received from other apps) uses its overlay context for
+/// dialogs and navigation.
+final rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
+
 final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
+    navigatorKey: rootNavigatorKey,
     initialLocation: Routes.home,
     routes: [
       GoRoute(path: Routes.home, builder: (context, state) => const HomeScreen()),
       GoRoute(path: Routes.idCard, builder: (context, state) => const IdCardScreen()),
       GoRoute(path: Routes.library, builder: (context, state) => const LibraryScreen()),
-      GoRoute(path: Routes.settings, builder: (context, state) => const SettingsScreen()),
+      GoRoute(
+        path: Routes.settings,
+        builder: (context, state) => const SettingsScreen(),
+        routes: [GoRoute(path: 'backup', builder: (context, state) => const BackupScreen())],
+      ),
       GoRoute(
         path: Routes.editor,
         builder: (context, state) => const EditorScreen(),
