@@ -1,0 +1,78 @@
+name: banglascanner
+description: "Bangla Scanner (বাংলা স্ক্যানার) - an offline document scanner for Bengali speakers."
+publish_to: 'none'
+version: 1.0.9+4
+
+environment:
+  sdk: ^3.12.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  intl: any
+
+  # State & navigation
+  flutter_riverpod: ^3.4.3
+  go_router: ^18.0.2
+
+  # Scanning & images
+  cunning_document_scanner: ^3.0.3
+  camera: ^0.12.1
+  image_picker: ^1.2.4
+  image_cropper: ^12.2.1
+  image: ^4.10.1
+
+  # Export & sharing
+  pdf: ^3.13.1
+  share_plus: ^13.3.1
+  gal: ^2.3.3
+
+  # Storage
+  path_provider: ^2.1.6
+  path: ^1.9.1
+  drift: ^2.35.1
+  drift_flutter: ^0.3.1
+  shared_preferences: ^2.5.6
+  uuid: ^4.6.0
+
+  # Permissions
+  permission_handler: ^13.0.2
+
+  # OCR (fully offline)
+  flutter_tesseract_ocr:
+    path: packages/flutter_tesseract_ocr
+  google_mlkit_text_recognition: ^0.17.1
+
+  # Crash reporting & tester builds (Android only, see README)
+  firebase_core: ^4.15.0
+  firebase_crashlytics: ^5.4.0
+  firebase_analytics: ^12.6.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  drift_dev: ^2.35.1
+  build_runner: ^2.16.1
+
+flutter:
+  uses-material-design: true
+  generate: true
+
+  assets:
+    - assets/tessdata/
+    - assets/tessdata_config.json
+
+  fonts:
+    - family: HindSiliguri
+      fonts:
+        - asset: assets/fonts/HindSiliguri-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/HindSiliguri-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/HindSiliguri-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/HindSiliguri-Bold.ttf
+          weight: 700

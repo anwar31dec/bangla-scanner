@@ -1,0 +1,18 @@
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "bangla-scanner",
+          "appId": "1:670275906113:android:b35db59c5d291e399bb4c0",
+          "fileOutput": "android/app/google-services.json"
+        },
+        "dev": {
+          "projectId": "bangla-scanner",
+          "appId": "1:670275906113:android:f91d203c33c36a019bb4c0",
+          "fileOutput": "android/app/google-services.json"
+        }
+      }
+    }
+  }
+}

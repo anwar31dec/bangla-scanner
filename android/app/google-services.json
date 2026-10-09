@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "670275906113",
+    "project_id": "bangla-scanner",
+    "storage_bucket": "bangla-scanner.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:670275906113:android:b35db59c5d291e399bb4c0",
+        "android_client_info": {
+          "package_name": "com.codeinherit.banglascanner"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBkHiRqzTvjtXze2nggps8paDZ6R4gulJ8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:670275906113:android:f91d203c33c36a019bb4c0",
+        "android_client_info": {
+          "package_name": "com.codeinherit.banglascanner.dev"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBkHiRqzTvjtXze2nggps8paDZ6R4gulJ8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

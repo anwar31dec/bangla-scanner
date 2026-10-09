@@ -1,0 +1,18 @@
+include: package:flutter_lints/flutter.yaml
+
+analyzer:
+  exclude:
+    - build/**
+    - packages/**            # vendored third-party plugin, kept close to upstream
+    - lib/**/*.g.dart
+    - lib/core/l10n/generated/**
+    - android/**
+    - ios/**
+
+linter:
+  rules:
+    prefer_single_quotes: true
+    prefer_const_constructors: true
+    prefer_final_locals: true
+    require_trailing_commas: false
+    avoid_print: true
