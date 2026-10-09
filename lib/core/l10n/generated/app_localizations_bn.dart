@@ -938,12 +938,25 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String importingPdfProgress(int done, int total) {
-    return '$total পাতার মধ্যে $done';
+    final intl.NumberFormat doneNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
+    final String doneString = doneNumberFormat.format(done);
+    final intl.NumberFormat totalNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String totalString = totalNumberFormat.format(total);
+
+    return '$totalString পাতার মধ্যে $doneString';
   }
 
   @override
   String pdfTooManyPages(int max) {
-    return 'শুধু প্রথম $max পাতা ইমপোর্ট করা হয়েছে।';
+    final intl.NumberFormat maxNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
+    final String maxString = maxNumberFormat.format(max);
+
+    return 'শুধু প্রথম $maxString পাতা ইমপোর্ট করা হয়েছে।';
   }
 
   @override
@@ -990,7 +1003,11 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String backupStats(int count, String size) {
-    return '$countটি ডকুমেন্ট, $size';
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return '$countStringটি ডকুমেন্ট, $size';
   }
 
   @override
@@ -1005,7 +1022,15 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String backupProgress(int done, int total) {
-    return '$totalটির মধ্যে $done নম্বর ডকুমেন্ট';
+    final intl.NumberFormat doneNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
+    final String doneString = doneNumberFormat.format(done);
+    final intl.NumberFormat totalNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String totalString = totalNumberFormat.format(total);
+
+    return '$totalStringটির মধ্যে $doneString নম্বর ডকুমেন্ট';
   }
 
   @override
@@ -1039,7 +1064,11 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String backupRestoreConfirmBody(int count, String date) {
-    return '$countটি ডকুমেন্ট, তৈরি $date। লাইব্রেরিতে যেগুলো আছে সেগুলো থাকবে; বাকিগুলো যোগ হবে।';
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return '$countStringটি ডকুমেন্ট, তৈরি $date। লাইব্রেরিতে যেগুলো আছে সেগুলো থাকবে; বাকিগুলো যোগ হবে।';
   }
 
   @override
@@ -1047,7 +1076,14 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String backupRestored(int added, int skipped) {
-    return '$addedটি ডকুমেন্ট রিস্টোর হয়েছে, $skippedটি আগে থেকেই ছিল';
+    final intl.NumberFormat addedNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String addedString = addedNumberFormat.format(added);
+    final intl.NumberFormat skippedNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String skippedString = skippedNumberFormat.format(skipped);
+
+    return '$addedStringটি ডকুমেন্ট রিস্টোর হয়েছে, $skippedStringটি আগে থেকেই ছিল';
   }
 
   @override

@@ -118,8 +118,11 @@ void main() {
     ], OcrLanguage.english);
     expect((await repo.get(doc.id))!.hasText, isTrue);
 
+    // [doc] is the row from before the text was stored, as the OCR screen
+    // passes it; the rebuild must not reset hasText.
     await repo.rebuildPdf(doc);
     final after = (await repo.get(doc.id))!;
+    expect(after.hasText, isTrue);
     expect(RegExp(r'\b3 Tr\b').allMatches(inflatedStreams(repo.pdfOf(after).readAsBytesSync())).length, 1);
     expect(after.sizeBytes, repo.pdfOf(after).lengthSync());
     expect(after.pageCount, 3);

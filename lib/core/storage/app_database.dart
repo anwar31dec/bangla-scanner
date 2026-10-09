@@ -200,6 +200,13 @@ class AppDatabase extends _$AppDatabase {
         DocumentsCompanion(name: Value(name), updatedAt: Value(DateTime.now())),
       );
 
+  /// Records a rewritten PDF file of a document: its size and protection.
+  /// Nothing else changes, so flags set meanwhile (hasText) are kept.
+  Future<void> setPdfFile(String id, {required int sizeBytes, required bool isProtected}) =>
+      (update(documents)..where((d) => d.id.equals(id))).write(
+        DocumentsCompanion(sizeBytes: Value(sizeBytes), isProtected: Value(isProtected), updatedAt: Value(DateTime.now())),
+      );
+
   Future<void> setFavorite(String id, bool favorite) =>
       (update(documents)..where((d) => d.id.equals(id))).write(DocumentsCompanion(isFavorite: Value(favorite)));
 

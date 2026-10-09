@@ -942,12 +942,25 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String importingPdfProgress(int done, int total) {
-    return 'Page $done of $total';
+    final intl.NumberFormat doneNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
+    final String doneString = doneNumberFormat.format(done);
+    final intl.NumberFormat totalNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String totalString = totalNumberFormat.format(total);
+
+    return 'Page $doneString of $totalString';
   }
 
   @override
   String pdfTooManyPages(int max) {
-    return 'Only the first $max pages were imported.';
+    final intl.NumberFormat maxNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
+    final String maxString = maxNumberFormat.format(max);
+
+    return 'Only the first $maxString pages were imported.';
   }
 
   @override
@@ -994,7 +1007,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String backupStats(int count, String size) {
-    return '$count documents, $size';
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return '$countString documents, $size';
   }
 
   @override
@@ -1009,7 +1026,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String backupProgress(int done, int total) {
-    return 'Document $done of $total';
+    final intl.NumberFormat doneNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
+    final String doneString = doneNumberFormat.format(done);
+    final intl.NumberFormat totalNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String totalString = totalNumberFormat.format(total);
+
+    return 'Document $doneString of $totalString';
   }
 
   @override
@@ -1043,7 +1068,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String backupRestoreConfirmBody(int count, String date) {
-    return '$count documents, made on $date. Documents already in the library are kept; the others are added.';
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return '$countString documents, made on $date. Documents already in the library are kept; the others are added.';
   }
 
   @override
@@ -1051,7 +1080,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String backupRestored(int added, int skipped) {
-    return '$added documents restored, $skipped already present';
+    final intl.NumberFormat addedNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String addedString = addedNumberFormat.format(added);
+    final intl.NumberFormat skippedNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String skippedString = skippedNumberFormat.format(skipped);
+
+    return '$addedString documents restored, $skippedString already present';
   }
 
   @override

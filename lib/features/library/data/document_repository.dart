@@ -179,22 +179,9 @@ class DocumentRepository {
       } catch (_) {}
       throw AppException.from(e);
     }
-    await _db.upsertDocument(
-      DocumentsCompanion(
-        id: Value(doc.id),
-        name: Value(doc.name),
-        format: Value(doc.format),
-        dirPath: Value(doc.dirPath),
-        pageCount: Value(doc.pageCount),
-        sizeBytes: Value(pdf.length),
-        createdAt: Value(doc.createdAt),
-        updatedAt: Value(DateTime.now()),
-        isFavorite: Value(doc.isFavorite),
-        folderId: Value(doc.folderId),
-        isProtected: Value(protect),
-        hasText: Value(doc.hasText),
-      ),
-    );
+    // Only the file changed. [doc] may be stale (the OCR screen stores the
+    // text first), so a full upsert would reset hasText.
+    await _db.setPdfFile(doc.id, sizeBytes: pdf.length, isProtected: protect);
   }
 
   /// 0-based page number of a `page_NNN.jpg` file, or null.
