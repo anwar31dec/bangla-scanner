@@ -47,6 +47,21 @@ class DraftController extends Notifier<DraftDocument?> {
     );
   }
 
+  /// Starts a new draft from the pages of several library documents, in the
+  /// given order, so they can be reordered and saved as one document.
+  /// The source documents are left untouched.
+  Future<void> startMerged(List<String> pageImagePaths, {String? suggestedName}) async {
+    await discard();
+    final paths = await ref.read(appPathsProvider.future);
+    final dir = Directory(p.join(paths.workDir.path, _uuid.v4()));
+    await dir.create(recursive: true);
+    state = DraftDocument(
+      workDirPath: dir.path,
+      pages: await _copyIn(dir, pageImagePaths, PageFilter.original),
+      suggestedName: suggestedName,
+    );
+  }
+
   /// Appends pages (from the scanner or gallery) to the current draft.
   Future<void> addPages(List<String> imagePaths) async {
     final draft = state;

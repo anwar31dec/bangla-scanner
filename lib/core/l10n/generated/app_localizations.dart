@@ -752,6 +752,48 @@ abstract class AppLocalizations {
   /// **'This document\'s files are missing or damaged.'**
   String get documentMissing;
 
+  /// No description provided for @merge.
+  ///
+  /// In en, this message translates to:
+  /// **'Merge'**
+  String get merge;
+
+  /// No description provided for @mergeTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Merge documents'**
+  String get mergeTooltip;
+
+  /// No description provided for @mergeSelected.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{Select documents to merge} =1{1 selected} other{{count} selected}}'**
+  String mergeSelected(int count);
+
+  /// No description provided for @mergeHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap documents in the order you want them. Then press Merge to combine them into one new PDF or image set.'**
+  String get mergeHint;
+
+  /// No description provided for @mergeNeedTwo.
+  ///
+  /// In en, this message translates to:
+  /// **'Select at least 2 documents to merge.'**
+  String get mergeNeedTwo;
+
+  /// No description provided for @mergeSkippedMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 document was skipped because its files are missing.} other{{count} documents were skipped because their files are missing.}}'**
+  String mergeSkippedMissing(int count);
+
+  /// No description provided for @mergePreparing.
+  ///
+  /// In en, this message translates to:
+  /// **'Preparing pages…'**
+  String get mergePreparing;
+
   /// No description provided for @errorCorruptFile.
   ///
   /// In en, this message translates to:

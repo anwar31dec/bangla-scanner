@@ -46,6 +46,7 @@ class DraftDocument {
     this.existingDocumentId,
     this.existingName,
     this.existingFormat,
+    this.suggestedName,
   });
 
   /// Folder that holds this draft's working images.
@@ -58,11 +59,16 @@ class DraftDocument {
   final String? existingName;
   final SaveFormat? existingFormat;
 
+  /// Name offered in the save sheet for a new draft (e.g. a merge), when
+  /// something better than the timestamp default is known.
+  final String? suggestedName;
+
   DraftDocument copyWith({List<DraftPage>? pages}) => DraftDocument(
         workDirPath: workDirPath,
         pages: pages ?? this.pages,
         existingDocumentId: existingDocumentId,
         existingName: existingName,
         existingFormat: existingFormat,
+        suggestedName: suggestedName,
       );
 }

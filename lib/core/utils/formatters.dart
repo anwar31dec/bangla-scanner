@@ -34,6 +34,10 @@ class Formatters {
   static String defaultScanName(DateTime now) =>
       '$docNamePrefix-${DateFormat('dd-MM-yyyy-HH-mm-ss', 'en').format(now)}';
 
+  /// Default name for a document merged from others: "Merged-06-10-2026-14-05-09".
+  static String defaultMergedName(DateTime now) =>
+      'Merged-${DateFormat('dd-MM-yyyy-HH-mm-ss', 'en').format(now)}';
+
   /// Removes characters that are not allowed in file names on Android/iOS.
   static String safeFileName(String name) {
     final cleaned = name

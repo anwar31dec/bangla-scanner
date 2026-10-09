@@ -6,6 +6,7 @@ import '../../../core/l10n/l10n.dart';
 import '../../../core/permissions/permission_service.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/storage/app_database.dart';
+import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/dialogs.dart';
 import '../../export/data/share_service.dart';
 import '../../scan/application/draft_controller.dart';
@@ -78,6 +79,43 @@ class DocumentActions {
       final repo = await ref.read(documentRepositoryProvider.future);
       await repo.delete(doc);
       if (context.mounted) showSnack(context, l10n.deleted);
+      return true;
+    } catch (e) {
+      if (context.mounted) showError(context, e);
+      return false;
+    }
+  }
+
+  /// Loads the pages of [docs] (in that order) into the editor as a new
+  /// draft, so they can be reordered and saved as one document. Documents
+  /// whose files are missing are skipped. Returns true when the editor was
+  /// opened.
+  static Future<bool> merge(BuildContext context, WidgetRef ref, List<DocumentRow> docs) async {
+    final l10n = context.l10n;
+    try {
+      final repo = await ref.read(documentRepositoryProvider.future);
+      final paths = <String>[];
+      var skipped = 0;
+      for (final doc in docs) {
+        final pages = await repo.pagesOf(doc);
+        if (pages.isEmpty) {
+          skipped++;
+          continue;
+        }
+        paths.addAll(pages.map((f) => f.path));
+      }
+      if (!context.mounted) return false;
+      if (paths.isEmpty) {
+        showSnack(context, l10n.documentMissing);
+        return false;
+      }
+      await ref.read(draftProvider.notifier).startMerged(
+            paths,
+            suggestedName: Formatters.defaultMergedName(DateTime.now()),
+          );
+      if (!context.mounted) return false;
+      if (skipped > 0) showSnack(context, l10n.mergeSkippedMissing(skipped));
+      context.push(Routes.editor);
       return true;
     } catch (e) {
       if (context.mounted) showError(context, e);

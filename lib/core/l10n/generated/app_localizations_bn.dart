@@ -381,6 +381,51 @@ class AppLocalizationsBn extends AppLocalizations {
       'এই ডকুমেন্টের ফাইল পাওয়া যাচ্ছে না বা নষ্ট হয়ে গেছে।';
 
   @override
+  String get merge => 'একত্র করুন';
+
+  @override
+  String get mergeTooltip => 'ডকুমেন্ট একত্র করুন';
+
+  @override
+  String mergeSelected(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countStringটি বাছাই করা হয়েছে',
+      zero: 'একত্র করতে ডকুমেন্ট বাছুন',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get mergeHint =>
+      'যে ক্রমে চান সেই ক্রমে ডকুমেন্টগুলোতে চাপুন। তারপর একত্র করুন চাপলে একটি নতুন PDF বা ছবির সেট তৈরি হবে।';
+
+  @override
+  String get mergeNeedTwo => 'একত্র করতে কমপক্ষে ২টি ডকুমেন্ট বাছুন।';
+
+  @override
+  String mergeSkippedMissing(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countStringটি ডকুমেন্ট বাদ পড়েছে, কারণ এর ফাইল পাওয়া যায়নি।',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get mergePreparing => 'পাতা প্রস্তুত হচ্ছে…';
+
+  @override
   String get errorCorruptFile => 'ফাইলটি নষ্ট, খোলা যাচ্ছে না।';
 
   @override

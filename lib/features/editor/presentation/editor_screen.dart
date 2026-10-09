@@ -95,7 +95,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
 
     final options = await showSaveSheet(
       context,
-      initialName: draft.existingName ?? Formatters.defaultScanName(DateTime.now()),
+      initialName: draft.existingName ?? draft.suggestedName ?? Formatters.defaultScanName(DateTime.now()),
       initialFormat: draft.existingFormat,
     );
     if (options == null || !mounted) return;

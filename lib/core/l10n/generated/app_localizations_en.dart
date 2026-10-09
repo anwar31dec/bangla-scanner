@@ -382,6 +382,54 @@ class AppLocalizationsEn extends AppLocalizations {
       'This document\'s files are missing or damaged.';
 
   @override
+  String get merge => 'Merge';
+
+  @override
+  String get mergeTooltip => 'Merge documents';
+
+  @override
+  String mergeSelected(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString selected',
+      one: '1 selected',
+      zero: 'Select documents to merge',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get mergeHint =>
+      'Tap documents in the order you want them. Then press Merge to combine them into one new PDF or image set.';
+
+  @override
+  String get mergeNeedTwo => 'Select at least 2 documents to merge.';
+
+  @override
+  String mergeSkippedMissing(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$countString documents were skipped because their files are missing.',
+      one: '1 document was skipped because its files are missing.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get mergePreparing => 'Preparing pages…';
+
+  @override
   String get errorCorruptFile => 'This file is damaged and cannot be opened.';
 
   @override
