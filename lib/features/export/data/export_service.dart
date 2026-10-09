@@ -32,11 +32,17 @@ class ExportService {
 
   static const _uuid = Uuid();
 
+  /// Saves [draft]. A PDF gets [pageSize] pages and, with a [password], is
+  /// encrypted so it opens only with that password. [folderId] files a new
+  /// document; an existing one keeps its folder and star.
   Future<DocumentRow> save({
     required DraftDocument draft,
     required String name,
     required SaveFormat format,
     required ExportQuality quality,
+    PdfPageSize pageSize = PdfPageSize.auto,
+    String? password,
+    String? folderId,
     ExportProgress? onProgress,
   }) async {
     if (draft.pages.isEmpty) throw const AppException(AppErrorKind.generic, 'No pages');
@@ -61,8 +67,15 @@ class ExportService {
         final source = await File(page.imagePath).readAsBytes();
         final turns = page.quarterTurns;
         final filter = page.filter;
+        final adjustments = page.adjustments;
         final jpeg = await Isolate.run(
-          () => ImageProcessing.processPage(source, quarterTurns: turns, filter: filter, quality: quality),
+          () => ImageProcessing.processPage(
+            source,
+            quarterTurns: turns,
+            filter: filter,
+            adjustments: adjustments,
+            quality: quality,
+          ),
         );
         final fileName = 'page_${(i + 1).toString().padLeft(3, '0')}.jpg';
         await File(p.join(pagesDir.path, fileName)).writeAsBytes(jpeg, flush: true);
@@ -74,9 +87,12 @@ class ExportService {
       final thumb = await Isolate.run(() => ImageProcessing.thumbnail(first));
       await File(p.join(staging.path, DocumentRepository.thumbFileName)).writeAsBytes(thumb, flush: true);
 
+      final protect = format == SaveFormat.pdf && password != null && password.isNotEmpty;
       int sizeBytes;
       if (format == SaveFormat.pdf) {
-        final pdf = await Isolate.run(() => PdfBuilder.build(processed, title: name));
+        final pdf = await Isolate.run(
+          () => PdfBuilder.build(processed, title: name, pageSize: pageSize, password: protect ? password : null),
+        );
         await File(p.join(staging.path, DocumentRepository.pdfFileName)).writeAsBytes(pdf, flush: true);
         sizeBytes = pdf.length;
       } else {
@@ -98,6 +114,9 @@ class ExportService {
           sizeBytes: Value(sizeBytes),
           createdAt: Value(existing?.createdAt ?? now),
           updatedAt: Value(now),
+          isFavorite: Value(existing?.isFavorite ?? false),
+          folderId: Value(existing?.folderId ?? folderId),
+          isProtected: Value(protect),
         ),
       );
       final saved = await _repo.get(id);

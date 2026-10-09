@@ -48,11 +48,12 @@ void main() {
     await tester.tap(find.text('See all'));
     await tester.pumpAndSettle();
 
-    // Merge button is disabled until two documents are picked.
-    await tester.tap(find.byTooltip('Merge documents'));
+    // Merge is disabled until two documents are picked.
+    await tester.tap(find.byTooltip('Select'));
     await tester.pumpAndSettle();
-    expect(find.text('Select documents to merge'), findsOneWidget);
-    expect(tester.widget<FilledButton>(find.widgetWithText(FilledButton, 'Merge')).enabled, isFalse);
+    expect(find.text('Select documents'), findsOneWidget);
+    InkWell mergeAction() => tester.widget<InkWell>(find.ancestor(of: find.text('Merge'), matching: find.byType(InkWell)).first);
+    expect(mergeAction().onTap, isNull);
 
     // Pick the older document first so it comes first in the merged result.
     await tester.tap(find.text('Bank statement'));
@@ -61,12 +62,12 @@ void main() {
     await tester.tap(find.text('Birth certificate'));
     await tester.pumpAndSettle();
     expect(find.text('2 selected'), findsOneWidget);
-    expect(tester.widget<FilledButton>(find.widgetWithText(FilledButton, 'Merge')).enabled, isTrue);
+    expect(mergeAction().onTap, isNotNull);
 
     // The merge copies files and hops between async zones; pump between
     // real waits so every continuation gets to run.
     await tester.runAsync(() async {
-      await tester.tap(find.widgetWithText(FilledButton, 'Merge'));
+      await tester.tap(find.text('Merge'));
       for (var i = 0; i < 30 && find.text('Edit pages').evaluate().isEmpty; i++) {
         await Future<void>.delayed(const Duration(milliseconds: 100));
         await tester.pump();

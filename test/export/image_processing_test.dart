@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:banglascanner/core/models/enums.dart';
 import 'package:banglascanner/core/utils/app_exception.dart';
 import 'package:banglascanner/features/export/data/image_processing.dart';
+import 'package:banglascanner/features/scan/data/draft_document.dart';
 import 'package:banglascanner/features/export/data/pdf_builder.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:image/image.dart' as img;
@@ -161,6 +162,74 @@ void main() {
       final landscape = PdfBuilder.pageFormatFor(3508, 2199);
       expect(landscape.height, a4.width);
       expect(landscape.width, closeTo(legal.height, 1e-9));
+    });
+  });
+
+  group('adjustments', () {
+    test('strength 0 gives the original back, 1 the full filter, 0.5 in between', () {
+      final src = ImageProcessing.decode(fakeDocumentJpeg(width: 120, height: 160));
+      final full = ImageProcessing.applyFilter(src, PageFilter.grayscale);
+      final none = ImageProcessing.applyFilter(src, PageFilter.grayscale, adjustments: const PageAdjustments(strength: 0));
+      final half = ImageProcessing.applyFilter(src, PageFilter.grayscale, adjustments: const PageAdjustments(strength: 0.5));
+      final p0 = src.getPixel(60, 80), pf = full.getPixel(60, 80), ph = half.getPixel(60, 80);
+      expect(none.getPixel(60, 80).r, p0.r);
+      final lo = p0.r < pf.r ? p0.r : pf.r, hi = p0.r < pf.r ? pf.r : p0.r;
+      expect(ph.r, inInclusiveRange(lo - 1, hi + 1));
+      expect(identical(none, src), isFalse, reason: 'the source is never returned for a changed image');
+    });
+
+    test('brightness and contrast move pixels the expected way and never touch the source', () {
+      final src = ImageProcessing.decode(fakeDocumentJpeg(width: 60, height: 80));
+      final before = src.getPixel(30, 40).r;
+      final bright = ImageProcessing.applyFilter(src, PageFilter.original, adjustments: const PageAdjustments(brightness: 0.5));
+      final dark = ImageProcessing.applyFilter(src, PageFilter.original, adjustments: const PageAdjustments(brightness: -0.5));
+      expect(bright.getPixel(30, 40).r, greaterThan(before));
+      expect(dark.getPixel(30, 40).r, lessThan(before));
+      expect(src.getPixel(30, 40).r, before);
+
+      // More contrast pushes a dark pixel darker and a light pixel lighter.
+      // Text bars of the fake page sit at x > 40 in rows 0-5 of every 20.
+      final img = ImageProcessing.decode(fakeDocumentJpeg(width: 120, height: 80));
+      final darkPx = img.getPixel(60, 2).r, lightPx = img.getPixel(60, 10).r;
+      expect(darkPx, lessThan(lightPx));
+      final punchy = ImageProcessing.applyFilter(img, PageFilter.original, adjustments: const PageAdjustments(contrast: 0.8));
+      expect(punchy.getPixel(60, 2).r, lessThanOrEqualTo(darkPx));
+      expect(punchy.getPixel(60, 10).r, greaterThanOrEqualTo(lightPx));
+      final flat = ImageProcessing.applyFilter(img, PageFilter.original, adjustments: const PageAdjustments(contrast: -0.8));
+      expect((flat.getPixel(60, 10).r - flat.getPixel(60, 2).r).abs(), lessThan((lightPx - darkPx).abs()));
+    });
+
+    test('processPage and previewJpeg accept adjustments', () {
+      final jpeg = ImageProcessing.processPage(
+        fakeDocumentJpeg(width: 100, height: 140),
+        quarterTurns: 0,
+        filter: PageFilter.autoColor,
+        quality: ExportQuality.low,
+        adjustments: const PageAdjustments(strength: 0.5, brightness: 0.1, contrast: 0.2),
+      );
+      expect(ImageProcessing.decode(jpeg).width, 100);
+    });
+  });
+
+  group('splitSpread', () {
+    test('a landscape photo is cut into left and right halves', () {
+      final (left, right) = ImageProcessing.splitSpread(fakeDocumentJpeg(width: 400, height: 300));
+      final l = ImageProcessing.decode(left), r = ImageProcessing.decode(right);
+      expect((l.width, l.height), (200, 300));
+      expect((r.width, r.height), (200, 300));
+    });
+
+    test('a portrait photo is cut into top and bottom halves', () {
+      final (top, bottom) = ImageProcessing.splitSpread(fakeDocumentJpeg(width: 300, height: 401));
+      expect(ImageProcessing.decode(top).height, 200);
+      expect(ImageProcessing.decode(bottom).height, 201);
+    });
+
+    test('rotation is applied before the cut', () {
+      // Portrait photo turned once is landscape: left/right halves.
+      final (a, b) = ImageProcessing.splitSpread(fakeDocumentJpeg(width: 300, height: 400), quarterTurns: 1);
+      expect((ImageProcessing.decode(a).width, ImageProcessing.decode(a).height), (200, 300));
+      expect(ImageProcessing.decode(b).width, 200);
     });
   });
 }

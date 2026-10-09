@@ -84,6 +84,8 @@ void main() {
       sizeBytes: 1,
       createdAt: now,
       updatedAt: now,
+      isFavorite: false,
+      isProtected: false,
     );
     await controller().startFromDocument(doc, sources.take(2).toList());
     expect(container.read(draftProvider)!.pages.map((pg) => pg.filter), everyElement(PageFilter.original));

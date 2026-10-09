@@ -28,7 +28,7 @@ void main() {
   testWidgets('filtered preview is rendered at preview size with the save-time filter', (tester) async {
     final container = ProviderContainer();
     addTearDown(container.dispose);
-    final request = (source: (path: imagePath, revision: 0, maxEdge: 200), filter: PageFilter.blackWhite);
+    final request = (source: (path: imagePath, revision: 0, maxEdge: 200), filter: PageFilter.blackWhite, adjustments: PageAdjustments.none);
     // Real file and codec work does not complete inside the fake-async zone.
     final jpeg = await tester.runAsync(() async {
       final sub = container.listen(filteredPreviewProvider(request), (_, _) {});

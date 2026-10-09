@@ -26,12 +26,15 @@ class ShareService {
   static const _channel = MethodChannel('com.codeinherit.banglascanner/storage');
 
   /// Opens the system share sheet with the document's PDF or JPEG pages.
-  Future<void> shareDocument(DocumentRow doc, {Rect? origin}) async {
-    final files = await _namedCopies(doc);
+  Future<void> shareDocument(DocumentRow doc, {Rect? origin}) => shareDocuments([doc], origin: origin);
+
+  /// Opens the system share sheet with the files of several documents.
+  Future<void> shareDocuments(List<DocumentRow> docs, {Rect? origin}) async {
+    final files = await _namedCopies(docs);
     await SharePlus.instance.share(
       ShareParams(
         files: [for (final f in files) XFile(f.path, mimeType: _mimeOf(f.path))],
-        subject: doc.name,
+        subject: docs.length == 1 ? docs.first.name : null,
         sharePositionOrigin: origin,
       ),
     );
@@ -43,7 +46,7 @@ class ShareService {
 
   /// Saves a copy of the document to Downloads/Bangla Scanner (Android) or
   /// a location the user picks in the Files app (iOS).
-  Future<SaveDestination> saveDocumentToDevice(DocumentRow doc) async => _saveToDevice(await _namedCopies(doc));
+  Future<SaveDestination> saveDocumentToDevice(DocumentRow doc) async => _saveToDevice(await _namedCopies([doc]));
 
   /// Saves OCR text as a .txt file to device storage.
   Future<SaveDestination> saveTextToDevice(String text, String baseName) async {
@@ -74,19 +77,26 @@ class ShareService {
 
   /// Copies output files into a temp folder with friendly names
   /// ("Scan 06-10-2026.pdf", "Scan 06-10-2026 (2).jpg"), because internal
-  /// files are named document.pdf / page_001.jpg.
-  Future<List<File>> _namedCopies(DocumentRow doc) async {
-    final outputs = await _repo.outputFilesOf(doc);
-    if (outputs.isEmpty || !(await _repo.isIntact(doc))) {
-      throw const AppException(AppErrorKind.missingFile);
-    }
+  /// files are named document.pdf / page_001.jpg. Two documents with the
+  /// same name get a numbered suffix.
+  Future<List<File>> _namedCopies(List<DocumentRow> docs) async {
     final dir = await _freshShareDir();
-    final base = Formatters.safeFileName(doc.name);
+    final used = <String>{};
     final copies = <File>[];
-    for (var i = 0; i < outputs.length; i++) {
-      final ext = doc.format == SaveFormat.pdf ? '.pdf' : '.jpg';
-      final suffix = outputs.length > 1 ? ' (${i + 1})' : '';
-      copies.add(await outputs[i].copy(p.join(dir.path, '$base$suffix$ext')));
+    for (final doc in docs) {
+      final outputs = await _repo.outputFilesOf(doc);
+      if (outputs.isEmpty || !(await _repo.isIntact(doc))) {
+        throw const AppException(AppErrorKind.missingFile);
+      }
+      var base = Formatters.safeFileName(doc.name);
+      for (var n = 2; !used.add(base.toLowerCase()); n++) {
+        base = '${Formatters.safeFileName(doc.name)} $n';
+      }
+      for (var i = 0; i < outputs.length; i++) {
+        final ext = doc.format == SaveFormat.pdf ? '.pdf' : '.jpg';
+        final suffix = outputs.length > 1 ? ' (${i + 1})' : '';
+        copies.add(await outputs[i].copy(p.join(dir.path, '$base$suffix$ext')));
+      }
     }
     return copies;
   }

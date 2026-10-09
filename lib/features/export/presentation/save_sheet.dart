@@ -7,34 +7,54 @@ import '../../settings/application/settings_controller.dart';
 
 /// Choices made in the save sheet.
 class SaveOptions {
-  const SaveOptions({required this.name, required this.format, required this.quality});
+  const SaveOptions({
+    required this.name,
+    required this.format,
+    required this.quality,
+    this.pageSize = PdfPageSize.auto,
+    this.password,
+  });
 
   final String name;
   final SaveFormat format;
   final ExportQuality quality;
+
+  /// PDF only.
+  final PdfPageSize pageSize;
+
+  /// PDF only; null or empty = not protected.
+  final String? password;
 }
 
-/// Bottom sheet asking for file name, format (PDF/JPEG) and quality.
-/// Returns null when dismissed.
+/// Shortest password accepted for a protected PDF.
+const minPdfPasswordLength = 4;
+
+/// Bottom sheet asking for file name, format (PDF/JPEG), quality, page size
+/// and an optional PDF password. Returns null when dismissed.
+///
+/// [initialProtected] pre-selects password protection (when re-saving a
+/// protected document); the password itself is never remembered.
 Future<SaveOptions?> showSaveSheet(
   BuildContext context, {
   required String initialName,
   SaveFormat? initialFormat,
+  bool initialProtected = false,
 }) {
   return showModalBottomSheet<SaveOptions>(
     context: context,
     isScrollControlled: true,
     showDragHandle: true,
     useSafeArea: true,
-    builder: (context) => _SaveSheet(initialName: initialName, initialFormat: initialFormat),
+    builder: (context) => _SaveSheet(initialName: initialName, initialFormat: initialFormat, initialProtected: initialProtected),
   );
 }
 
 class _SaveSheet extends ConsumerStatefulWidget {
-  const _SaveSheet({required this.initialName, this.initialFormat});
+  const _SaveSheet({required this.initialName, this.initialFormat, this.initialProtected = false});
 
   final String initialName;
   final SaveFormat? initialFormat;
+  final bool initialProtected;
 
   @override
   ConsumerState<_SaveSheet> createState() => _SaveSheetState();
@@ -42,9 +62,14 @@ class _SaveSheet extends ConsumerStatefulWidget {
 
 class _SaveSheetState extends ConsumerState<_SaveSheet> {
   late final TextEditingController _name = TextEditingController(text: widget.initialName);
+  final _password = TextEditingController();
   late SaveFormat _format;
   late ExportQuality _quality;
+  late PdfPageSize _pageSize;
+  late bool _protect = widget.initialProtected;
+  bool _showPassword = false;
   String? _error;
+  String? _passwordError;
 
   @override
   void initState() {
@@ -52,27 +77,43 @@ class _SaveSheetState extends ConsumerState<_SaveSheet> {
     final settings = ref.read(settingsProvider);
     _format = widget.initialFormat ?? settings.defaultFormat;
     _quality = settings.defaultQuality;
+    _pageSize = settings.defaultPageSize;
   }
 
   @override
   void dispose() {
     _name.dispose();
+    _password.dispose();
     super.dispose();
   }
 
   void _submit() {
+    final l10n = context.l10n;
     final name = _name.text.trim();
-    if (name.isEmpty) {
-      setState(() => _error = context.l10n.fileNameEmpty);
-      return;
-    }
-    Navigator.pop(context, SaveOptions(name: name, format: _format, quality: _quality));
+    final password = _password.text;
+    final protect = _protect && _format == SaveFormat.pdf;
+    setState(() {
+      _error = name.isEmpty ? l10n.fileNameEmpty : null;
+      _passwordError = protect && password.length < minPdfPasswordLength ? l10n.passwordTooShort : null;
+    });
+    if (_error != null || _passwordError != null) return;
+    Navigator.pop(
+      context,
+      SaveOptions(
+        name: name,
+        format: _format,
+        quality: _quality,
+        pageSize: _format == SaveFormat.pdf ? _pageSize : PdfPageSize.auto,
+        password: protect ? password : null,
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final theme = Theme.of(context);
+    final isPdf = _format == SaveFormat.pdf;
     return Padding(
       padding: EdgeInsets.fromLTRB(20, 0, 20, 20 + MediaQuery.viewInsetsOf(context).bottom),
       child: SingleChildScrollView(
@@ -118,6 +159,49 @@ class _SaveSheetState extends ConsumerState<_SaveSheet> {
             ),
             const SizedBox(height: 6),
             Text(l10n.qualityHint, style: theme.textTheme.bodySmall),
+            if (isPdf) ...[
+              const SizedBox(height: 20),
+              Text(l10n.pageSize, style: theme.textTheme.titleMedium),
+              const SizedBox(height: 8),
+              SegmentedButton<PdfPageSize>(
+                showSelectedIcon: false,
+                segments: [
+                  for (final s in PdfPageSize.values) ButtonSegment(value: s, label: Text(l10n.pageSizeLabel(s))),
+                ],
+                selected: {_pageSize},
+                onSelectionChanged: (s) => setState(() => _pageSize = s.first),
+              ),
+              const SizedBox(height: 6),
+              Text(l10n.pageSizeHint, style: theme.textTheme.bodySmall),
+              const SizedBox(height: 12),
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                secondary: const Icon(Icons.lock_outline),
+                title: Text(l10n.protectWithPassword),
+                value: _protect,
+                onChanged: (v) => setState(() => _protect = v),
+              ),
+              if (_protect) ...[
+                TextField(
+                  controller: _password,
+                  obscureText: !_showPassword,
+                  autofocus: true,
+                  textInputAction: TextInputAction.done,
+                  decoration: InputDecoration(
+                    labelText: l10n.pdfPassword,
+                    errorText: _passwordError,
+                    prefixIcon: const Icon(Icons.key_outlined),
+                    suffixIcon: IconButton(
+                      icon: Icon(_showPassword ? Icons.visibility_off_outlined : Icons.visibility_outlined),
+                      onPressed: () => setState(() => _showPassword = !_showPassword),
+                    ),
+                  ),
+                  onSubmitted: (_) => _submit(),
+                ),
+                const SizedBox(height: 6),
+                Text(l10n.passwordHint, style: theme.textTheme.bodySmall),
+              ],
+            ],
             const SizedBox(height: 24),
             FilledButton.icon(onPressed: _submit, icon: const Icon(Icons.check), label: Text(l10n.save)),
           ],

@@ -11,6 +11,9 @@ final librarySearchProvider = NotifierProvider<_StringNotifier, String>(_StringN
 /// Current library sort order.
 final librarySortProvider = NotifierProvider<_SortNotifier, DocumentSort>(_SortNotifier.new);
 
+/// All / favourites / one folder.
+final libraryFilterProvider = NotifierProvider<_FilterNotifier, LibraryFilter>(_FilterNotifier.new);
+
 class _StringNotifier extends Notifier<String> {
   @override
   String build() => '';
@@ -23,10 +26,20 @@ class _SortNotifier extends Notifier<DocumentSort> {
   void set(DocumentSort value) => state = value;
 }
 
+class _FilterNotifier extends Notifier<LibraryFilter> {
+  @override
+  LibraryFilter build() => LibraryFilter.all;
+  void set(LibraryFilter value) => state = value;
+}
+
 /// Filtered + sorted documents for the library screen.
 final libraryDocumentsProvider = StreamProvider<List<DocumentRow>>((ref) async* {
   final repo = await ref.watch(documentRepositoryProvider.future);
-  yield* repo.watchAll(search: ref.watch(librarySearchProvider), sort: ref.watch(librarySortProvider));
+  yield* repo.watchAll(
+    search: ref.watch(librarySearchProvider),
+    sort: ref.watch(librarySortProvider),
+    filter: ref.watch(libraryFilterProvider),
+  );
 });
 
 /// The few most recent documents shown on the home screen.
@@ -47,4 +60,16 @@ final documentPagesProvider = FutureProvider.family<List<File>, String>((ref, id
   final doc = await ref.watch(documentProvider(id).future);
   if (doc == null) return const [];
   return repo.pagesOf(doc);
+});
+
+/// All folders, by name.
+final foldersProvider = StreamProvider<List<FolderRow>>((ref) async* {
+  final repo = await ref.watch(documentRepositoryProvider.future);
+  yield* repo.watchFolders();
+});
+
+/// Documents per folder id.
+final folderCountsProvider = StreamProvider<Map<String, int>>((ref) async* {
+  final repo = await ref.watch(documentRepositoryProvider.future);
+  yield* repo.watchFolderCounts();
 });

@@ -21,8 +21,8 @@ import 'page_preview.dart';
 Future<Uint8List> _rotateInBackground(Uint8List bytes, int quarterTurns) =>
     Isolate.run(() => ImageProcessing.rotateJpeg(bytes, quarterTurns));
 
-/// Edits one page: crop, rotate, filter, delete. Swipe to move between
-/// pages.
+/// Edits one page: crop, rotate, filter, adjust (strength, brightness,
+/// contrast), book split, delete. Swipe to move between pages.
 class PageEditScreen extends ConsumerStatefulWidget {
   const PageEditScreen({super.key, required this.initialIndex});
 
@@ -36,6 +36,9 @@ class _PageEditScreenState extends ConsumerState<PageEditScreen> {
   late final PageController _controller = PageController(initialPage: widget.initialIndex);
   late int _index = widget.initialIndex;
   bool _busy = false;
+
+  /// Shows the adjustment sliders instead of the filter strip.
+  bool _adjusting = false;
 
   @override
   void dispose() {
@@ -88,6 +91,26 @@ class _PageEditScreenState extends ConsumerState<PageEditScreen> {
     }
   }
 
+  Future<void> _split(DraftPage page) async {
+    final l10n = context.l10n;
+    final ok = await showConfirmDialog(
+      context,
+      title: l10n.bookSplitTitle,
+      body: l10n.bookSplitBody,
+      confirmLabel: l10n.split,
+    );
+    if (!ok || !mounted) return;
+    setState(() => _busy = true);
+    try {
+      await ref.read(draftProvider.notifier).splitPage(page.id);
+      if (mounted) showSnack(context, l10n.pageSplitDone);
+    } catch (e) {
+      if (mounted) showError(context, e);
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
   Future<void> _delete(DraftPage page, int total) async {
     final l10n = context.l10n;
     final ok = await showConfirmDialog(
@@ -112,6 +135,7 @@ class _PageEditScreenState extends ConsumerState<PageEditScreen> {
     final index = _index.clamp(0, pages.length - 1);
     final page = pages[index];
     final theme = Theme.of(context);
+    final notifier = ref.read(draftProvider.notifier);
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.pageEditTitle(index + 1, pages.length))),
@@ -133,19 +157,24 @@ class _PageEditScreenState extends ConsumerState<PageEditScreen> {
               ],
             ),
           ),
-          _FilterStrip(
-            page: page,
-            onSelected: (f) => ref.read(draftProvider.notifier).setFilter(page.id, f),
-          ),
-          if (pages.length > 1)
-            TextButton.icon(
-              onPressed: () {
-                ref.read(draftProvider.notifier).applyFilterToAll(page.filter);
-                showSnack(context, l10n.appliedToAll);
-              },
-              icon: const Icon(Icons.done_all),
-              label: Text(l10n.applyToAllPages),
-            ),
+          if (_adjusting)
+            _AdjustPanel(
+              key: ValueKey('adjust-${page.id}'),
+              page: page,
+              onChanged: (a) => notifier.setAdjustments(page.id, a),
+            )
+          else ...[
+            _FilterStrip(page: page, onSelected: (f) => notifier.setFilter(page.id, f)),
+            if (pages.length > 1)
+              TextButton.icon(
+                onPressed: () {
+                  notifier.applyFilterToAll(page.filter);
+                  showSnack(context, l10n.appliedToAll);
+                },
+                icon: const Icon(Icons.done_all),
+                label: Text(l10n.applyToAllPages),
+              ),
+          ],
         ],
       ),
       bottomNavigationBar: SafeArea(
@@ -159,7 +188,18 @@ class _PageEditScreenState extends ConsumerState<PageEditScreen> {
               _ToolButton(
                 icon: Icons.rotate_right,
                 label: l10n.rotate,
-                onPressed: _busy ? null : () => ref.read(draftProvider.notifier).rotate(page.id),
+                onPressed: _busy ? null : () => notifier.rotate(page.id),
+              ),
+              _ToolButton(
+                icon: Icons.tune,
+                label: l10n.adjust,
+                selected: _adjusting,
+                onPressed: _busy ? null : () => setState(() => _adjusting = !_adjusting),
+              ),
+              _ToolButton(
+                icon: Icons.vertical_split_outlined,
+                label: l10n.bookSplit,
+                onPressed: _busy ? null : () => _split(page),
               ),
               _ToolButton(
                 icon: Icons.delete_outline,
@@ -169,6 +209,77 @@ class _PageEditScreenState extends ConsumerState<PageEditScreen> {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// Sliders for filter strength, brightness and contrast. The preview is
+/// recomputed when a slider is released, not on every pixel of movement.
+class _AdjustPanel extends StatefulWidget {
+  const _AdjustPanel({super.key, required this.page, required this.onChanged});
+
+  final DraftPage page;
+  final ValueChanged<PageAdjustments> onChanged;
+
+  @override
+  State<_AdjustPanel> createState() => _AdjustPanelState();
+}
+
+class _AdjustPanelState extends State<_AdjustPanel> {
+  late PageAdjustments _value = widget.page.adjustments;
+
+  @override
+  void didUpdateWidget(_AdjustPanel oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.page.adjustments != widget.page.adjustments) _value = widget.page.adjustments;
+  }
+
+  void _commit() => widget.onChanged(_value);
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final theme = Theme.of(context);
+    final hasFilter = widget.page.filter != PageFilter.original;
+    Widget slider(String label, double value, double min, double max, ValueChanged<double> onChanged) => Row(
+          children: [
+            SizedBox(width: 104, child: Text(label, style: theme.textTheme.bodyMedium, maxLines: 2)),
+            Expanded(
+              child: Slider(
+                value: value,
+                min: min,
+                max: max,
+                label: label,
+                onChanged: (v) => setState(() => onChanged(v)),
+                onChangeEnd: (_) => _commit(),
+              ),
+            ),
+          ],
+        );
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 0, 8, 4),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (hasFilter)
+            slider(l10n.filterStrength, _value.strength, 0, 1, (v) => _value = _value.copyWith(strength: v)),
+          slider(l10n.brightness, _value.brightness, -1, 1, (v) => _value = _value.copyWith(brightness: v)),
+          slider(l10n.contrast, _value.contrast, -1, 1, (v) => _value = _value.copyWith(contrast: v)),
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton.icon(
+              onPressed: _value.isNeutral
+                  ? null
+                  : () {
+                      setState(() => _value = PageAdjustments.none);
+                      _commit();
+                    },
+              icon: const Icon(Icons.restart_alt),
+              label: Text(l10n.resetAdjustments),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -222,7 +333,13 @@ class _FilterStrip extends StatelessWidget {
                           ),
                           clipBehavior: Clip.antiAlias,
                           child: SizedBox.expand(
-                            child: PagePreview(page: page.copyWith(filter: f), cacheWidth: 300, fit: BoxFit.cover),
+                            // Thumbnails show the plain filter so they stay
+                            // comparable while the sliders are tweaked.
+                            child: PagePreview(
+                              page: page.copyWith(filter: f, adjustments: PageAdjustments.none),
+                              cacheWidth: 300,
+                              fit: BoxFit.cover,
+                            ),
                           ),
                         ),
                         const SizedBox(height: 4),
@@ -249,25 +366,35 @@ class _FilterStrip extends StatelessWidget {
 }
 
 class _ToolButton extends StatelessWidget {
-  const _ToolButton({required this.icon, required this.label, required this.onPressed});
+  const _ToolButton({required this.icon, required this.label, required this.onPressed, this.selected = false});
 
   final IconData icon;
   final String label;
   final VoidCallback? onPressed;
+  final bool selected;
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final color = selected ? scheme.primary : null;
     return InkWell(
       borderRadius: BorderRadius.circular(12),
       onTap: onPressed,
       child: ConstrainedBox(
-        constraints: const BoxConstraints(minWidth: 88, minHeight: 64),
-        child: Column(
-          // Without this the bar grows to the full screen height and hides
-          // the page.
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [Icon(icon, size: 28), const SizedBox(height: 4), Text(label)],
+        constraints: const BoxConstraints(minWidth: 64, minHeight: 64),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4),
+          child: Column(
+            // Without this the bar grows to the full screen height and hides
+            // the page.
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, size: 26, color: color),
+              const SizedBox(height: 4),
+              Text(label, style: Theme.of(context).textTheme.labelMedium?.copyWith(color: color), maxLines: 1, overflow: TextOverflow.ellipsis),
+            ],
+          ),
         ),
       ),
     );

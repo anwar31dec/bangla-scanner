@@ -575,4 +575,313 @@ class AppLocalizationsBn extends AppLocalizations {
   String settingsVersion(String version) {
     return 'সংস্করণ $version';
   }
+
+  @override
+  String get folders => 'ফোল্ডার';
+
+  @override
+  String get filterAll => 'সব';
+
+  @override
+  String get favorites => 'প্রিয়';
+
+  @override
+  String get newFolder => 'নতুন ফোল্ডার';
+
+  @override
+  String get folderName => 'ফোল্ডারের নাম';
+
+  @override
+  String get renameFolder => 'ফোল্ডারের নাম বদলান';
+
+  @override
+  String get deleteFolder => 'ফোল্ডার মুছুন';
+
+  @override
+  String get deleteFolderTitle => 'ফোল্ডার মুছবেন?';
+
+  @override
+  String deleteFolderBody(String name) {
+    return '\"$name\" মুছে যাবে। এর ডকুমেন্টগুলো লাইব্রেরিতে থেকে যাবে।';
+  }
+
+  @override
+  String get folderCreated => 'ফোল্ডার তৈরি হয়েছে';
+
+  @override
+  String get moveToFolder => 'ফোল্ডারে সরান';
+
+  @override
+  String get noFolder => 'কোনো ফোল্ডারে নয়';
+
+  @override
+  String movedToFolder(String name) {
+    return '\"$name\" ফোল্ডারে সরানো হয়েছে';
+  }
+
+  @override
+  String get removedFromFolder => 'ফোল্ডার থেকে সরানো হয়েছে';
+
+  @override
+  String get noFoldersYet =>
+      'এখনো কোনো ফোল্ডার নেই। ডকুমেন্ট গুছিয়ে রাখতে একটি তৈরি করুন।';
+
+  @override
+  String get addToFavorites => 'প্রিয়তে যোগ করুন';
+
+  @override
+  String get removeFromFavorites => 'প্রিয় থেকে সরান';
+
+  @override
+  String get favoritesEmpty => 'দ্রুত খুঁজে পেতে ডকুমেন্টে তারা চিহ্ন দিন।';
+
+  @override
+  String get folderEmpty => 'এই ফোল্ডার খালি। ডকুমেন্টের মেনু থেকে এখানে সরান।';
+
+  @override
+  String get select => 'নির্বাচন';
+
+  @override
+  String selectedCount(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countStringটি নির্বাচিত',
+      one: '১টি নির্বাচিত',
+      zero: 'ডকুমেন্ট নির্বাচন করুন',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get selectAll => 'সব নির্বাচন';
+
+  @override
+  String get selectionHint =>
+      'ডকুমেন্টে ট্যাপ করে নির্বাচন করুন। একত্র করলে যে ক্রমে ট্যাপ করেছেন সেই ক্রমে জোড়া লাগবে।';
+
+  @override
+  String deleteSelectedTitle(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countStringটি ডকুমেন্ট মুছবেন?',
+      one: '১টি ডকুমেন্ট মুছবেন?',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get deleteSelectedBody => 'এগুলো স্থায়ীভাবে মুছে যাবে।';
+
+  @override
+  String deletedCount(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countStringটি ডকুমেন্ট মুছে ফেলা হয়েছে',
+      one: '১টি ডকুমেন্ট মুছে ফেলা হয়েছে',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get protectWithPassword => 'পাসওয়ার্ড দিয়ে সুরক্ষিত করুন';
+
+  @override
+  String get pdfPassword => 'PDF পাসওয়ার্ড';
+
+  @override
+  String get passwordHint =>
+      'এই পাসওয়ার্ড ছাড়া PDF খুলবে না। সাবধানে রাখুন: হারালে ফেরত পাওয়া যাবে না।';
+
+  @override
+  String get passwordTooShort => 'কমপক্ষে ৪ অক্ষর দিন';
+
+  @override
+  String get enterPdfPassword => 'PDF-এর পাসওয়ার্ড দিন';
+
+  @override
+  String get enterPdfPasswordBody =>
+      'এই PDF সুরক্ষিত। নতুন পাতা দিয়ে আবার তৈরি করতে এর পাসওয়ার্ড দিন।';
+
+  @override
+  String get protectedBadge => 'পাসওয়ার্ড সুরক্ষিত';
+
+  @override
+  String get pageSize => 'পাতার আকার';
+
+  @override
+  String get pageSizeAuto => 'স্ক্যান অনুযায়ী';
+
+  @override
+  String get pageSizeA4 => 'A4';
+
+  @override
+  String get pageSizeLetter => 'Letter';
+
+  @override
+  String get pageSizeLegal => 'Legal';
+
+  @override
+  String get pageSizeHint =>
+      'স্ক্যান অনুযায়ী হলে প্রতিটি পাতা স্ক্যানের আকৃতি পায়। A4, Letter ও Legal প্রিন্টের জন্য আসল কাগজের মাপে বসায়।';
+
+  @override
+  String get settingsDefaultPageSize => 'PDF-এর ডিফল্ট পাতার আকার';
+
+  @override
+  String get settingsAppLock => 'অ্যাপ লক';
+
+  @override
+  String get appLockEnable => 'PIN দিয়ে অ্যাপ লক করুন';
+
+  @override
+  String get appLockBiometric => 'আঙুলের ছাপ বা মুখ দিয়ে খুলুন';
+
+  @override
+  String get appLockDelay => 'অ্যাপ ছাড়ার কতক্ষণ পরে লক হবে';
+
+  @override
+  String get lockImmediately => 'সাথে সাথে';
+
+  @override
+  String get lockAfterOneMinute => '১ মিনিট';
+
+  @override
+  String get lockAfterFiveMinutes => '৫ মিনিট';
+
+  @override
+  String get changePin => 'PIN বদলান';
+
+  @override
+  String get setPinTitle => 'PIN সেট করুন';
+
+  @override
+  String get setPinHint => '৪ থেকে ৮ সংখ্যা দিন। অ্যাপ খুলতে এটি লাগবে।';
+
+  @override
+  String get confirmPinTitle => 'PIN আবার দিন';
+
+  @override
+  String get enterCurrentPin => 'বর্তমান PIN দিন';
+
+  @override
+  String get pinMismatch => 'PIN দুটি মেলেনি। আবার চেষ্টা করুন।';
+
+  @override
+  String get pinTooShort => 'PIN-এ কমপক্ষে ৪ সংখ্যা লাগবে।';
+
+  @override
+  String get enterPin => 'আপনার PIN দিন';
+
+  @override
+  String get wrongPin => 'ভুল PIN';
+
+  @override
+  String get lockedTitle => 'বাংলা স্ক্যানার লক করা আছে';
+
+  @override
+  String get unlockWithBiometrics => 'আঙুলের ছাপ বা মুখ ব্যবহার করুন';
+
+  @override
+  String get biometricReason => 'বাংলা স্ক্যানার খুলুন';
+
+  @override
+  String get biometricUnavailable =>
+      'এই ফোনে আঙুলের ছাপ বা মুখ দিয়ে খোলার ব্যবস্থা নেই।';
+
+  @override
+  String get appLockOn => 'অ্যাপ লক চালু হয়েছে';
+
+  @override
+  String get appLockOff => 'অ্যাপ লক বন্ধ হয়েছে';
+
+  @override
+  String get adjust => 'সমন্বয়';
+
+  @override
+  String get filterStrength => 'ফিল্টারের মাত্রা';
+
+  @override
+  String get brightness => 'উজ্জ্বলতা';
+
+  @override
+  String get contrast => 'কনট্রাস্ট';
+
+  @override
+  String get resetAdjustments => 'রিসেট';
+
+  @override
+  String get bookSplit => 'বই ভাগ';
+
+  @override
+  String get bookSplitTitle => 'এই পাতাটি দুই ভাগ করবেন?';
+
+  @override
+  String get bookSplitBody =>
+      'খোলা বইয়ের ছবির জন্য: পাতাটি বাম ও ডান পাতায় কাটা হবে (লম্বা ছবিতে উপর ও নিচে)।';
+
+  @override
+  String get split => 'ভাগ করুন';
+
+  @override
+  String get pageSplitDone => 'পাতাটি দুটি পাতায় ভাগ হয়েছে';
+
+  @override
+  String get reorderPages => 'পাতার ক্রম বদলান';
+
+  @override
+  String get pagesTitle => 'পাতা';
+
+  @override
+  String get pagesHint =>
+      'চেপে ধরে টেনে ক্রম বদলান। পাতা সরাতে বিন আইকনে ট্যাপ করুন।';
+
+  @override
+  String get apply => 'প্রয়োগ';
+
+  @override
+  String get pagesUpdated => 'পাতা আপডেট হয়েছে';
+
+  @override
+  String get pagesNeedOne => 'ডকুমেন্টে অন্তত একটি পাতা থাকতে হবে।';
+
+  @override
+  String get zoomHint => 'জুম করতে দুইবার ট্যাপ করুন। দুই আঙুলে ছোট-বড় করুন।';
+
+  @override
+  String get cardKind => 'ডকুমেন্টের ধরন';
+
+  @override
+  String get cardKindId => 'NID / স্মার্ট কার্ড';
+
+  @override
+  String get cardKindPassport => 'পাসপোর্ট';
+
+  @override
+  String get idCardHintPassport =>
+      'পাসপোর্টের ছবির পাতাটি গাঢ় রঙের সমতল জায়গায় রেখে স্ক্যান করুন।';
+
+  @override
+  String get idCardPassportSecond => 'দ্বিতীয় পাতা (ঐচ্ছিক)';
+
+  @override
+  String get idCardPassportReady =>
+      'পাতাটি আসল পাসপোর্টের মাপে A4 কাগজে বসানো হবে।';
+
+  @override
+  String get idCardOptional => 'ঐচ্ছিক';
 }

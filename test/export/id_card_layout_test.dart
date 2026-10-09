@@ -1,6 +1,9 @@
+import 'package:banglascanner/core/models/enums.dart';
 import 'package:banglascanner/features/id_card/data/id_card_layout.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:image/image.dart' as img;
+
+import '../helpers.dart';
 
 void main() {
   test('cards keep real ID-1 proportions after fitting', () {
@@ -58,5 +61,17 @@ void main() {
     expect(marginPx.r > 245 && marginPx.g > 245, isTrue, reason: 'margin is white');
     // Symmetric horizontal margins.
     expect((2480 - (left + cardW)) - left, lessThanOrEqualTo(1));
+  });
+
+  test('a single passport page is centred on A4 at ID-3 size', () {
+    final side = fakeDocumentJpeg(width: 500, height: 352);
+    final page = img.decodeJpg(IdCardLayout.composeSides([side], kind: CardKind.passport))!;
+    expect(page.width, IdCardLayout.mmToPx(210));
+    final cardW = IdCardLayout.mmToPx(125), cardH = IdCardLayout.mmToPx(88);
+    final left = (page.width - cardW) ~/ 2, top = (page.height - cardH) ~/ 2;
+    // Inside the card: photo pixels (not white). Just outside: white paper.
+    expect(page.getPixel(left + cardW ~/ 2, top + cardH ~/ 2).r, lessThan(250));
+    expect(page.getPixel(left + cardW ~/ 2, top - 10).r, 255);
+    expect(page.getPixel(left + cardW ~/ 2, top + cardH + 10).r, 255);
   });
 }

@@ -31,5 +31,21 @@ class SettingsController extends Notifier<AppSettings> {
   Future<void> setThemeMode(ThemeMode mode) => _update(state.copyWith(themeMode: mode));
   Future<void> setDefaultFormat(SaveFormat f) => _update(state.copyWith(defaultFormat: f));
   Future<void> setDefaultQuality(ExportQuality q) => _update(state.copyWith(defaultQuality: q));
+  Future<void> setDefaultPageSize(PdfPageSize s) => _update(state.copyWith(defaultPageSize: s));
   Future<void> setDefaultOcrLanguage(OcrLanguage l) => _update(state.copyWith(defaultOcrLanguage: l));
+  Future<void> setBiometricUnlock(bool on) => _update(state.copyWith(biometricUnlock: on));
+  Future<void> setLockDelay(LockDelay d) => _update(state.copyWith(lockDelay: d));
+
+  /// Turns the app lock on with [pin] (also used to change the PIN).
+  Future<void> enableAppLock(String pin) async {
+    await ref.read(settingsRepositoryProvider).setPin(pin);
+    await _update(state.copyWith(appLockEnabled: true));
+  }
+
+  Future<void> disableAppLock() async {
+    await _update(state.copyWith(appLockEnabled: false, biometricUnlock: false));
+    await ref.read(settingsRepositoryProvider).clearPin();
+  }
+
+  bool verifyPin(String pin) => ref.read(settingsRepositoryProvider).verifyPin(pin);
 }

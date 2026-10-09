@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/models/enums.dart';
 import '../../export/data/image_processing.dart';
+import '../../scan/data/draft_document.dart';
 
 /// A page image file at a given preview size. [revision] is part of the key
 /// so a changed file (after cropping) is decoded again.
@@ -15,10 +16,15 @@ typedef PreviewSource = ({String path, int revision, int maxEdge});
 /// Raw RGBA pixels of a page, scaled down for the screen.
 typedef PreviewPixels = ({Uint8List rgba, int width, int height});
 
+/// What a filtered preview is made of.
+typedef PreviewRequest = ({PreviewSource source, PageFilter filter, PageAdjustments adjustments});
+
 /// Top-level on purpose: a closure created inside a provider would carry
 /// its `ref` with it, and that cannot be sent to another isolate.
-Future<Uint8List> _filterInBackground(PreviewPixels pixels, PageFilter filter) =>
-    Isolate.run(() => ImageProcessing.previewJpeg(pixels.rgba, pixels.width, pixels.height, filter));
+Future<Uint8List> _filterInBackground(PreviewPixels pixels, PageFilter filter, PageAdjustments adjustments) =>
+    Isolate.run(
+      () => ImageProcessing.previewJpeg(pixels.rgba, pixels.width, pixels.height, filter, adjustments: adjustments),
+    );
 
 /// Decodes an image file with the platform codec, scaled down so its longest
 /// edge is at most [maxEdge]. Much faster than a full decode in Dart.
@@ -53,13 +59,13 @@ final previewPixelsProvider = FutureProvider.autoDispose.family<PreviewPixels, P
   retry: (_, _) => null,
 );
 
-/// JPEG of a page with [filter] applied by the same code that runs on save,
-/// so the preview shows what the saved document will look like.
-final filteredPreviewProvider =
-    FutureProvider.autoDispose.family<Uint8List, ({PreviewSource source, PageFilter filter})>(
+/// JPEG of a page with the filter and adjustments applied by the same code
+/// that runs on save, so the preview shows what the saved document will
+/// look like.
+final filteredPreviewProvider = FutureProvider.autoDispose.family<Uint8List, PreviewRequest>(
   (ref, request) async {
     final pixels = await ref.watch(previewPixelsProvider(request.source).future);
-    return _filterInBackground(pixels, request.filter);
+    return _filterInBackground(pixels, request.filter, request.adjustments);
   },
   retry: (_, _) => null,
 );

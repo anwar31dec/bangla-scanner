@@ -97,6 +97,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
       context,
       initialName: draft.existingName ?? draft.suggestedName ?? Formatters.defaultScanName(DateTime.now()),
       initialFormat: draft.existingFormat,
+      initialProtected: draft.existingIsProtected,
     );
     if (options == null || !mounted) return;
 
@@ -112,6 +113,8 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
         name: options.name,
         format: options.format,
         quality: options.quality,
+        pageSize: options.pageSize,
+        password: options.password,
         onProgress: (done, total) {
           if (!mounted) return;
           setState(() {

@@ -7,6 +7,7 @@ import '../../features/home/presentation/home_screen.dart';
 import '../../features/id_card/presentation/id_card_screen.dart';
 import '../../features/library/presentation/document_screen.dart';
 import '../../features/library/presentation/library_screen.dart';
+import '../../features/library/presentation/pages_screen.dart';
 import '../../features/ocr/presentation/ocr_screen.dart';
 import '../../features/settings/presentation/settings_screen.dart';
 
@@ -21,6 +22,7 @@ abstract final class Routes {
 
   static String documentPath(String id) => '/document/$id';
   static String ocrPath(String id) => '/document/$id/ocr';
+  static String pagesPath(String id) => '/document/$id/pages';
   static String pageEditPath(int index) => '/editor/page/$index';
 }
 
@@ -48,6 +50,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => DocumentScreen(documentId: state.pathParameters['id']!),
         routes: [
           GoRoute(path: 'ocr', builder: (context, state) => OcrScreen(documentId: state.pathParameters['id']!)),
+          GoRoute(path: 'pages', builder: (context, state) => PagesScreen(documentId: state.pathParameters['id']!)),
         ],
       ),
     ],

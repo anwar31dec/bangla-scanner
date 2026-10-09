@@ -3,18 +3,73 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/l10n/l10n.dart';
 import '../../../core/models/enums.dart';
+import '../../../core/widgets/dialogs.dart';
+import '../../lock/application/lock_controller.dart';
+import '../../lock/presentation/lock_screen.dart';
 import '../application/settings_controller.dart';
 
-const appVersion = '1.0.0';
+const appVersion = '1.1.0';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
+
+  /// Asks for a new PIN twice; returns it, or null when cancelled or the
+  /// two entries differ.
+  static Future<String?> _askNewPin(BuildContext context) async {
+    final l10n = context.l10n;
+    final pin = await showPinDialog(context, title: l10n.setPinTitle, hint: l10n.setPinHint);
+    if (pin == null || !context.mounted) return null;
+    final again = await showPinDialog(context, title: l10n.confirmPinTitle);
+    if (again == null || !context.mounted) return null;
+    if (again != pin) {
+      showSnack(context, l10n.pinMismatch);
+      return null;
+    }
+    return pin;
+  }
+
+  /// Asks for the current PIN; true when it is right.
+  static Future<bool> _confirmCurrentPin(BuildContext context, WidgetRef ref) async {
+    final l10n = context.l10n;
+    final pin = await showPinDialog(context, title: l10n.enterCurrentPin);
+    if (pin == null || !context.mounted) return false;
+    if (!ref.read(settingsProvider.notifier).verifyPin(pin)) {
+      showSnack(context, l10n.wrongPin);
+      return false;
+    }
+    return true;
+  }
+
+  static Future<void> _toggleLock(BuildContext context, WidgetRef ref, bool on) async {
+    final l10n = context.l10n;
+    final controller = ref.read(settingsProvider.notifier);
+    if (on) {
+      final pin = await _askNewPin(context);
+      if (pin == null) return;
+      await controller.enableAppLock(pin);
+      if (context.mounted) showSnack(context, l10n.appLockOn);
+    } else {
+      if (!await _confirmCurrentPin(context, ref)) return;
+      await controller.disableAppLock();
+      if (context.mounted) showSnack(context, l10n.appLockOff);
+    }
+  }
+
+  static Future<void> _changePin(BuildContext context, WidgetRef ref) async {
+    if (!await _confirmCurrentPin(context, ref)) return;
+    if (!context.mounted) return;
+    final pin = await _askNewPin(context);
+    if (pin == null) return;
+    await ref.read(settingsProvider.notifier).enableAppLock(pin);
+    if (context.mounted) showSnack(context, context.l10n.appLockOn);
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final settings = ref.watch(settingsProvider);
     final controller = ref.read(settingsProvider.notifier);
+    final biometricsAvailable = ref.watch(biometricsAvailableProvider).value ?? false;
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.settingsTitle)),
@@ -62,12 +117,65 @@ class SettingsScreen extends ConsumerWidget {
             ),
           ),
           _Section(
+            icon: Icons.crop_portrait,
+            title: l10n.settingsDefaultPageSize,
+            child: _Choice<PdfPageSize>(
+              selected: settings.defaultPageSize,
+              options: {for (final s in PdfPageSize.values) s: l10n.pageSizeLabel(s)},
+              onChanged: controller.setDefaultPageSize,
+            ),
+          ),
+          _Section(
             icon: Icons.text_fields,
             title: l10n.settingsDefaultOcr,
             child: _Choice<OcrLanguage>(
               selected: settings.defaultOcrLanguage,
               options: {for (final o in OcrLanguage.values) o: l10n.ocrLanguageLabel(o)},
               onChanged: controller.setDefaultOcrLanguage,
+            ),
+          ),
+          _Section(
+            icon: Icons.lock_outline,
+            title: l10n.settingsAppLock,
+            child: Card(
+              margin: EdgeInsets.zero,
+              child: Column(
+                children: [
+                  SwitchListTile(
+                    secondary: const Icon(Icons.pin_outlined),
+                    title: Text(l10n.appLockEnable),
+                    value: settings.appLockEnabled,
+                    onChanged: (on) => _toggleLock(context, ref, on),
+                  ),
+                  if (settings.appLockEnabled) ...[
+                    SwitchListTile(
+                      secondary: const Icon(Icons.fingerprint),
+                      title: Text(l10n.appLockBiometric),
+                      subtitle: biometricsAvailable ? null : Text(l10n.biometricUnavailable),
+                      value: settings.biometricUnlock && biometricsAvailable,
+                      onChanged: biometricsAvailable ? controller.setBiometricUnlock : null,
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.timer_outlined),
+                      title: Text(l10n.appLockDelay),
+                      subtitle: Padding(
+                        padding: const EdgeInsets.only(top: 8),
+                        child: _Choice<LockDelay>(
+                          selected: settings.lockDelay,
+                          options: {for (final d in LockDelay.values) d: l10n.lockDelayLabel(d)},
+                          onChanged: controller.setLockDelay,
+                        ),
+                      ),
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.password_outlined),
+                      title: Text(l10n.changePin),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: () => _changePin(context, ref),
+                    ),
+                  ],
+                ],
+              ),
             ),
           ),
           const SizedBox(height: 8),

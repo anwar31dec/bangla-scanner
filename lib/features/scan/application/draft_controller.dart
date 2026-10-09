@@ -1,4 +1,6 @@
 import 'dart:io';
+import 'dart:isolate';
+import 'dart:typed_data';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path/path.dart' as p;
@@ -7,12 +9,18 @@ import 'package:uuid/uuid.dart';
 import '../../../core/models/enums.dart';
 import '../../../core/storage/app_database.dart';
 import '../../../core/storage/storage_providers.dart';
+import '../../export/data/image_processing.dart';
 import '../data/draft_document.dart';
 
 const _uuid = Uuid();
 
 /// Holds the document being scanned/edited (null when there is none).
 final draftProvider = NotifierProvider<DraftController, DraftDocument?>(DraftController.new);
+
+/// Top-level on purpose: a closure created inside the notifier would carry
+/// it along, and that cannot be sent to another isolate.
+Future<(Uint8List, Uint8List)> _splitInBackground(Uint8List bytes, int quarterTurns) =>
+    Isolate.run(() => ImageProcessing.splitSpread(bytes, quarterTurns: quarterTurns));
 
 class DraftController extends Notifier<DraftDocument?> {
   /// Filter that fresh photos (scanner or gallery) start with, so a scan
@@ -44,6 +52,9 @@ class DraftController extends Notifier<DraftDocument?> {
       existingDocumentId: doc.id,
       existingName: doc.name,
       existingFormat: doc.format,
+      existingFolderId: doc.folderId,
+      existingIsFavorite: doc.isFavorite,
+      existingIsProtected: doc.isProtected,
     );
   }
 
@@ -84,6 +95,9 @@ class DraftController extends Notifier<DraftDocument?> {
 
   void setFilter(String pageId, PageFilter filter) => _updatePage(pageId, (pg) => pg.copyWith(filter: filter));
 
+  void setAdjustments(String pageId, PageAdjustments adjustments) =>
+      _updatePage(pageId, (pg) => pg.copyWith(adjustments: adjustments));
+
   void applyFilterToAll(PageFilter filter) {
     final draft = state;
     if (draft == null) return;
@@ -98,6 +112,32 @@ class DraftController extends Notifier<DraftDocument?> {
     final target = p.join(draft.workDirPath, '${_uuid.v4()}${p.extension(newImagePath)}');
     await File(newImagePath).copy(target);
     _updatePage(pageId, (pg) => pg.copyWith(imagePath: target, quarterTurns: 0, revision: pg.revision + 1));
+  }
+
+  /// Book mode: cuts the page into two pages (left/right, or top/bottom for
+  /// a tall photo) that take its place. Filter and adjustments are kept.
+  Future<void> splitPage(String pageId) async {
+    final draft = state;
+    if (draft == null) return;
+    final index = draft.pages.indexWhere((pg) => pg.id == pageId);
+    if (index < 0) return;
+    final page = draft.pages[index];
+    final (first, second) = await _splitInBackground(await File(page.imagePath).readAsBytes(), page.quarterTurns);
+    final halves = <DraftPage>[];
+    for (final bytes in [first, second]) {
+      final id = _uuid.v4();
+      final target = p.join(draft.workDirPath, '$id.jpg');
+      await File(target).writeAsBytes(bytes, flush: true);
+      halves.add(DraftPage(id: id, imagePath: target, filter: page.filter, adjustments: page.adjustments));
+    }
+    // The draft may have changed while the image was being cut.
+    final current = state;
+    if (current == null) return;
+    final pages = [...current.pages];
+    final at = pages.indexWhere((pg) => pg.id == pageId);
+    if (at < 0) return;
+    pages.replaceRange(at, at + 1, halves);
+    state = current.copyWith(pages: pages);
   }
 
   void deletePage(String pageId) {

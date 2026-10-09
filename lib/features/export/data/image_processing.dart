@@ -5,6 +5,7 @@ import 'package:image/image.dart' as img;
 
 import '../../../core/models/enums.dart';
 import '../../../core/utils/app_exception.dart';
+import '../../scan/data/draft_document.dart';
 
 /// Pure image operations (no Flutter, no I/O) so they can run inside
 /// background isolates and be unit tested.
@@ -52,8 +53,71 @@ class ImageProcessing {
     );
   }
 
-  /// Applies one of the document filters.
-  static img.Image applyFilter(img.Image src, PageFilter filter) {
+  /// Applies one of the document filters, then the manual [adjustments]
+  /// (filter strength, brightness, contrast). [src] is never modified.
+  static img.Image applyFilter(img.Image src, PageFilter filter, {PageAdjustments adjustments = PageAdjustments.none}) {
+    var out = _filterOnly(src, filter);
+    if (filter != PageFilter.original && adjustments.strength < 1) out = blend(src, out, adjustments.strength);
+    if (adjustments.brightness != 0 || adjustments.contrast != 0) {
+      if (identical(out, src)) out = src.clone();
+      adjustTone(out, brightness: adjustments.brightness, contrast: adjustments.contrast);
+    }
+    return out;
+  }
+
+  /// Mixes [filtered] over [original]: 0 gives the original, 1 the filtered
+  /// image. Both must have the same size and RGB layout.
+  static img.Image blend(img.Image original, img.Image filtered, double amount) {
+    final t = amount.clamp(0.0, 1.0);
+    if (t >= 1) return filtered;
+    if (t <= 0) return original.clone();
+    if (original.width != filtered.width ||
+        original.height != filtered.height ||
+        original.numChannels != 3 ||
+        filtered.numChannels != 3 ||
+        original.format != img.Format.uint8 ||
+        filtered.format != img.Format.uint8) {
+      return filtered;
+    }
+    final a = original.toUint8List(), b = filtered.toUint8List();
+    final out = img.Image(width: original.width, height: original.height);
+    final dst = out.toUint8List();
+    // Fixed point: 0..256.
+    final k = (t * 256).round();
+    for (var i = 0; i < dst.length; i++) {
+      dst[i] = a[i] + (((b[i] - a[i]) * k) >> 8);
+    }
+    return out;
+  }
+
+  /// Brightness (-1…1) and contrast (-1…1) through a lookup table, in place.
+  static img.Image adjustTone(img.Image image, {double brightness = 0, double contrast = 0}) {
+    if (brightness == 0 && contrast == 0) return image;
+    final c = contrast.clamp(-1.0, 1.0);
+    // Slope 0.25 at -1, 1 at 0, 2.5 at +1.
+    final slope = c >= 0 ? 1 + c * 1.5 : 1 + c * 0.75;
+    final shift = brightness.clamp(-1.0, 1.0) * 128;
+    final lut = Uint8List(256);
+    for (var i = 0; i < 256; i++) {
+      lut[i] = ((i - 128) * slope + 128 + shift).round().clamp(0, 255);
+    }
+    if (image.numChannels == 3 && !image.hasPalette && image.format == img.Format.uint8) {
+      final px = image.toUint8List();
+      for (var i = 0; i < px.length; i++) {
+        px[i] = lut[px[i]];
+      }
+      return image;
+    }
+    for (final p in image) {
+      p
+        ..r = lut[p.r.toInt().clamp(0, 255)]
+        ..g = lut[p.g.toInt().clamp(0, 255)]
+        ..b = lut[p.b.toInt().clamp(0, 255)];
+    }
+    return image;
+  }
+
+  static img.Image _filterOnly(img.Image src, PageFilter filter) {
     switch (filter) {
       case PageFilter.original:
         return src;
@@ -132,13 +196,35 @@ class ImageProcessing {
     required int quarterTurns,
     required PageFilter filter,
     required ExportQuality quality,
+    PageAdjustments adjustments = PageAdjustments.none,
   }) {
     var image = decode(bytes);
     // Resize first: filters are much faster on smaller images.
     image = limitSize(image, quality.maxEdge);
     image = rotateQuarterTurns(image, quarterTurns);
-    image = applyFilter(image, filter);
+    image = applyFilter(image, filter, adjustments: adjustments);
     return img.encodeJpg(image, quality: quality.jpegQuality);
+  }
+
+  /// Book mode: cuts a photo of an open book (two pages side by side) into
+  /// two page images, in reading order. A landscape image is split into a
+  /// left and a right half; a portrait one into a top and a bottom half.
+  /// [quarterTurns] is baked in first so the split follows what the user
+  /// sees.
+  static (Uint8List, Uint8List) splitSpread(Uint8List bytes, {int quarterTurns = 0}) {
+    final image = rotateQuarterTurns(decode(bytes), quarterTurns);
+    final w = image.width, h = image.height;
+    final img.Image first, second;
+    if (w >= h) {
+      final half = w ~/ 2;
+      first = img.copyCrop(image, x: 0, y: 0, width: half, height: h);
+      second = img.copyCrop(image, x: half, y: 0, width: w - half, height: h);
+    } else {
+      final half = h ~/ 2;
+      first = img.copyCrop(image, x: 0, y: 0, width: w, height: half);
+      second = img.copyCrop(image, x: 0, y: half, width: w, height: h - half);
+    }
+    return (img.encodeJpg(first, quality: 95), img.encodeJpg(second, quality: 95));
   }
 
   /// Bakes a rotation into a high quality JPEG (used before manual crop so
@@ -157,7 +243,13 @@ class ImageProcessing {
   /// Applies [filter] to raw RGBA pixels and returns a JPEG. Used for the
   /// on-screen previews, which decode the page at screen size with the
   /// platform codec (much faster than [decode] on a full camera photo).
-  static Uint8List previewJpeg(Uint8List rgba, int width, int height, PageFilter filter) {
+  static Uint8List previewJpeg(
+    Uint8List rgba,
+    int width,
+    int height,
+    PageFilter filter, {
+    PageAdjustments adjustments = PageAdjustments.none,
+  }) {
     final image = img.Image.fromBytes(
       width: width,
       height: height,
@@ -165,7 +257,7 @@ class ImageProcessing {
       bytesOffset: rgba.offsetInBytes,
       numChannels: 4,
     ).convert(numChannels: 3);
-    return img.encodeJpg(applyFilter(image, filter), quality: 90);
+    return img.encodeJpg(applyFilter(image, filter, adjustments: adjustments), quality: 90);
   }
 
   /// Stretches the brightness range so the darkest 1% becomes black and the

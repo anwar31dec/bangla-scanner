@@ -3,10 +3,11 @@ import 'dart:typed_data';
 
 import 'package:image/image.dart' as img;
 
+import '../../../core/models/enums.dart';
 import '../../export/data/image_processing.dart';
 
-/// Places the front and back of an ID card on one A4 page at real size.
-/// Pure Dart; runs in a background isolate.
+/// Places the sides of a card (NID, passport page…) on one A4 page at real
+/// size. Pure Dart; runs in a background isolate.
 class IdCardLayout {
   IdCardLayout._();
 
@@ -17,7 +18,7 @@ class IdCardLayout {
   static const a4WidthMm = 210.0;
   static const a4HeightMm = 297.0;
 
-  /// Vertical gap between the two sides.
+  /// Vertical gap between two sides.
   static const gapMm = 20.0;
 
   /// Rendered at 300 dpi; the save pipeline downsizes for lower qualities.
@@ -38,24 +39,38 @@ class IdCardLayout {
   }) =>
       Isolate.run(() => compose(front, back, flipFront: flipFront, flipBack: flipBack));
 
-  /// Returns a high quality JPEG of the A4 page. [flipFront] / [flipBack]
-  /// turn a side by 180° (for a card that was photographed upside down).
-  static Uint8List compose(Uint8List front, Uint8List back, {bool flipFront = false, bool flipBack = false}) {
+  /// Like [composeInBackground] for any [kind] and one or two sides.
+  static Future<Uint8List> composeSidesInBackground(
+    List<Uint8List> sides, {
+    required CardKind kind,
+    List<bool> flipped = const [],
+  }) =>
+      Isolate.run(() => composeSides(sides, kind: kind, flipped: flipped));
+
+  /// Returns a high quality JPEG of the A4 page with an ID-1 card's front
+  /// and back. [flipFront] / [flipBack] turn a side by 180° (for a card that
+  /// was photographed upside down).
+  static Uint8List compose(Uint8List front, Uint8List back, {bool flipFront = false, bool flipBack = false}) =>
+      composeSides([front, back], kind: CardKind.idCard, flipped: [flipFront, flipBack]);
+
+  /// Returns a high quality JPEG of an A4 page with [sides] (one or more)
+  /// stacked and centred at the real size of [kind]. [flipped] turns the
+  /// matching side by 180°.
+  static Uint8List composeSides(List<Uint8List> sides, {required CardKind kind, List<bool> flipped = const []}) {
+    if (sides.isEmpty) throw ArgumentError('At least one side is needed');
     final pageW = mmToPx(a4WidthMm), pageH = mmToPx(a4HeightMm);
-    final cardW = mmToPx(cardWidthMm), cardH = mmToPx(cardHeightMm);
+    final cardW = mmToPx(kind.widthMm), cardH = mmToPx(kind.heightMm);
     final gap = mmToPx(gapMm);
 
     final page = img.Image(width: pageW, height: pageH);
     img.fill(page, color: img.ColorRgb8(255, 255, 255));
 
     final left = (pageW - cardW) ~/ 2;
-    final top = (pageH - (cardH * 2 + gap)) ~/ 2;
+    final top = (pageH - (cardH * sides.length + gap * (sides.length - 1))) ~/ 2;
 
-    final sides = [front, back];
-    final flipped = [flipFront, flipBack];
     for (var i = 0; i < sides.length; i++) {
       var card = fitCard(ImageProcessing.decode(sides[i]), cardW, cardH);
-      if (flipped[i]) card = ImageProcessing.rotateQuarterTurns(card, 2);
+      if (i < flipped.length && flipped[i]) card = ImageProcessing.rotateQuarterTurns(card, 2);
       final y = top + i * (cardH + gap);
       img.compositeImage(page, card, dstX: left, dstY: y);
       // Thin light outline makes the card easy to cut out after printing.

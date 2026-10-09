@@ -26,6 +26,13 @@ extension EnumLabels on AppLocalizations {
         ExportQuality.high => qualityHigh,
       };
 
+  String pageSizeLabel(PdfPageSize s) => switch (s) {
+        PdfPageSize.auto => pageSizeAuto,
+        PdfPageSize.a4 => pageSizeA4,
+        PdfPageSize.letter => pageSizeLetter,
+        PdfPageSize.legal => pageSizeLegal,
+      };
+
   String ocrLanguageLabel(OcrLanguage l) => switch (l) {
         OcrLanguage.bangla => ocrLangBangla,
         OcrLanguage.english => ocrLangEnglish,
@@ -39,5 +46,16 @@ extension EnumLabels on AppLocalizations {
         PageFilter.blackWhite => filterBlackWhite,
         PageFilter.whiteboard => filterWhiteboard,
         PageFilter.lightText => filterLightText,
+      };
+
+  String lockDelayLabel(LockDelay d) => switch (d) {
+        LockDelay.immediately => lockImmediately,
+        LockDelay.oneMinute => lockAfterOneMinute,
+        LockDelay.fiveMinutes => lockAfterFiveMinutes,
+      };
+
+  String cardKindLabel(CardKind k) => switch (k) {
+        CardKind.idCard => cardKindId,
+        CardKind.passport => cardKindPassport,
       };
 }

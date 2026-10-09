@@ -9,6 +9,9 @@
     <uses-feature android:name="android.hardware.camera.any" android:required="false" tools:node="replace" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" tools:node="remove" />
 
+    <!-- App lock: fingerprint / face unlock (local_auth). -->
+    <uses-permission android:name="android.permission.USE_BIOMETRIC" />
+
     <!-- Only needed to save copies into Downloads on Android 9 and below.
          Android 10+ uses MediaStore, which needs no permission. -->
     <uses-permission

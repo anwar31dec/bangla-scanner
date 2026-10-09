@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:path/path.dart' as p;
 
 import '../../../core/l10n/l10n.dart';
+import '../../../core/models/enums.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/storage/storage_providers.dart';
 import '../../../core/utils/formatters.dart';
@@ -18,8 +19,9 @@ import '../../scan/data/scanner_service.dart';
 import '../../scan/presentation/scan_actions.dart';
 import '../data/id_card_layout.dart';
 
-/// Guided ID card flow: scan the FRONT, then the BACK, then both are placed
-/// on one A4 page at real card size and saved as PDF or JPEG.
+/// Guided card flow: pick the document type (NID / smart card, passport),
+/// scan the FRONT, then the BACK (optional for a passport), and both are
+/// placed on one A4 page at real size and saved as PDF or JPEG.
 class IdCardScreen extends ConsumerStatefulWidget {
   const IdCardScreen({super.key});
 
@@ -29,6 +31,7 @@ class IdCardScreen extends ConsumerStatefulWidget {
 
 class _IdCardScreenState extends ConsumerState<IdCardScreen> {
   Directory? _workDir;
+  CardKind _kind = CardKind.idCard;
   String? _front;
   String? _back;
 
@@ -39,7 +42,7 @@ class _IdCardScreenState extends ConsumerState<IdCardScreen> {
   String? _progressText;
 
   /// 0 = front, 1 = back, 2 = ready.
-  int get _step => _front == null ? 0 : (_back == null ? 1 : 2);
+  int get _step => _front == null ? 0 : (_back == null && _kind.needsBack ? 1 : 2);
 
   @override
   void dispose() {
@@ -84,7 +87,7 @@ class _IdCardScreenState extends ConsumerState<IdCardScreen> {
   Future<void> _createAndSave() async {
     final l10n = context.l10n;
     final front = _front, back = _back;
-    if (front == null || back == null) return;
+    if (front == null || (back == null && _kind.needsBack)) return;
 
     final options = await showSaveSheet(context, initialName: Formatters.defaultScanName(DateTime.now()));
     if (options == null || !mounted) return;
@@ -95,14 +98,9 @@ class _IdCardScreenState extends ConsumerState<IdCardScreen> {
     });
     try {
       final dir = await _ensureWorkDir();
-      final frontBytes = await File(front).readAsBytes();
-      final backBytes = await File(back).readAsBytes();
-      final pageBytes = await IdCardLayout.composeInBackground(
-        frontBytes,
-        backBytes,
-        flipFront: _frontFlipped,
-        flipBack: _backFlipped,
-      );
+      final sides = [await File(front).readAsBytes(), if (back != null) await File(back).readAsBytes()];
+      final flipped = [_frontFlipped, if (back != null) _backFlipped];
+      final pageBytes = await IdCardLayout.composeSidesInBackground(sides, kind: _kind, flipped: flipped);
       final pagePath = p.join(dir.path, 'a4_page.jpg');
       await File(pagePath).writeAsBytes(pageBytes, flush: true);
 
@@ -112,6 +110,8 @@ class _IdCardScreenState extends ConsumerState<IdCardScreen> {
         name: options.name,
         format: options.format,
         quality: options.quality,
+        pageSize: options.pageSize,
+        password: options.password,
       );
       await ref.read(scannerServiceProvider).cleanCache();
       if (!mounted) return;
@@ -129,6 +129,7 @@ class _IdCardScreenState extends ConsumerState<IdCardScreen> {
     final l10n = context.l10n;
     final theme = Theme.of(context);
     final step = _step;
+    final passport = _kind == CardKind.passport;
 
     return Stack(
       children: [
@@ -137,19 +138,39 @@ class _IdCardScreenState extends ConsumerState<IdCardScreen> {
           body: ListView(
             padding: const EdgeInsets.all(16),
             children: [
-              _StepHeader(step: step),
+              Text(l10n.cardKind, style: theme.textTheme.titleMedium),
+              const SizedBox(height: 8),
+              SizedBox(
+                width: double.infinity,
+                child: SegmentedButton<CardKind>(
+                  showSelectedIcon: false,
+                  segments: [
+                    for (final k in CardKind.values)
+                      ButtonSegment(
+                        value: k,
+                        icon: Icon(k == CardKind.passport ? Icons.book_outlined : Icons.badge_outlined),
+                        label: Text(l10n.cardKindLabel(k)),
+                      ),
+                  ],
+                  selected: {_kind},
+                  onSelectionChanged: _busy ? null : (s) => setState(() => _kind = s.first),
+                ),
+              ),
+              const SizedBox(height: 20),
+              _StepHeader(step: step, backLabel: passport ? l10n.idCardOptional : l10n.idCardBack),
               const SizedBox(height: 16),
               Text(
                 switch (step) {
-                  0 => l10n.idCardHintFront,
+                  0 => passport ? l10n.idCardHintPassport : l10n.idCardHintFront,
                   1 => l10n.idCardHintBack,
-                  _ => l10n.idCardReadyHint,
+                  _ => passport ? l10n.idCardPassportReady : l10n.idCardReadyHint,
                 },
                 style: theme.textTheme.bodyLarge,
               ),
               const SizedBox(height: 16),
               _CardSlot(
-                label: l10n.idCardFront,
+                label: passport ? l10n.cardKindPassport : l10n.idCardFront,
+                aspectRatio: _kind.widthMm / _kind.heightMm,
                 imagePath: _front,
                 flipped: _frontFlipped,
                 active: step == 0,
@@ -159,7 +180,8 @@ class _IdCardScreenState extends ConsumerState<IdCardScreen> {
               ),
               const SizedBox(height: 16),
               _CardSlot(
-                label: l10n.idCardBack,
+                label: passport ? l10n.idCardPassportSecond : l10n.idCardBack,
+                aspectRatio: _kind.widthMm / _kind.heightMm,
                 imagePath: _back,
                 flipped: _backFlipped,
                 active: step == 1,
@@ -188,9 +210,10 @@ class _IdCardScreenState extends ConsumerState<IdCardScreen> {
 }
 
 class _StepHeader extends StatelessWidget {
-  const _StepHeader({required this.step});
+  const _StepHeader({required this.step, required this.backLabel});
 
   final int step;
+  final String backLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -215,13 +238,14 @@ class _StepHeader extends StatelessWidget {
       );
     }
 
-    return Row(children: [dot(0, l10n.idCardFront), dot(1, l10n.idCardBack), dot(2, 'A4')]);
+    return Row(children: [dot(0, l10n.idCardFront), dot(1, backLabel), dot(2, 'A4')]);
   }
 }
 
 class _CardSlot extends StatelessWidget {
   const _CardSlot({
     required this.label,
+    required this.aspectRatio,
     required this.imagePath,
     required this.flipped,
     required this.active,
@@ -232,6 +256,7 @@ class _CardSlot extends StatelessWidget {
   });
 
   final String label;
+  final double aspectRatio;
   final String? imagePath;
   final bool flipped;
   final bool active;
@@ -259,9 +284,9 @@ class _CardSlot extends StatelessWidget {
           children: [
             Text(label, style: theme.textTheme.titleMedium),
             const SizedBox(height: 10),
-            // Real ID-1 card proportions.
+            // Real card proportions.
             AspectRatio(
-              aspectRatio: 85.6 / 53.98,
+              aspectRatio: aspectRatio,
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(10),
                 child: ColoredBox(

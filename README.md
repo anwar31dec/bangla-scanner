@@ -17,14 +17,16 @@ without an internet connection.
 | Scan with auto-crop, multi-page | `cunning_document_scanner` → ML Kit Document Scanner (Android), VisionKit (iOS) |
 | Flash Scan | In-app camera (`camera`) whose flash fires only when the photo is taken (ML Kit's scanner can only keep its light on). Live page outline and auto capture when the page is held still; own page detection and perspective crop in Dart, with draggable corners |
 | Import from gallery | `image_picker` (multi-select) |
-| Edit pages | Crop (`image_cropper`), rotate, drag-and-drop reorder, delete, add more pages |
-| Filters | Original, Auto color (white paper, shadows removed), Grayscale, Black & White (adaptive threshold), Whiteboard, Light text. Picked from live thumbnails of the page |
-| Save | PDF (page fits the scan: A4, Legal, …; `pdf` package) or JPEG; quality Low / Medium / High; default name `Scan dd-MM-yyyy` |
-| Library | Thumbnail, name, pages, date, size; search, sort, rename, delete; metadata in drift |
+| Edit pages | Crop (`image_cropper`), rotate, drag-and-drop reorder, delete, add more pages, **Book split** (cut a photo of an open book into two pages) |
+| Filters | Original, Auto color (white paper, shadows removed), Grayscale, Black & White (adaptive threshold), Whiteboard, Light text. Picked from live thumbnails of the page. **Adjust**: filter strength, brightness and contrast sliders |
+| Save | PDF or JPEG; quality Low / Medium / High; PDF page size *Fit to scan* (page shaped like the scan) or A4 / Letter / Legal (scan fitted on real paper); optional **PDF open password** (AES-128, standard security handler, see below); default name `Doc-dd-MM-yyyy-HH-mm-ss` |
+| Library | Thumbnail, name, pages, date, size; search, sort, rename, delete; **folders** (chips row, long-press a folder to rename/delete), **favourites**; multi-select to share, move, star, delete or merge several documents; metadata in drift |
+| Document viewer | Swipe pages, pinch and double-tap to zoom (paging pauses while zoomed), thumbnail strip; **reorder or remove pages** of a saved document without re-processing (JPEGs are moved, the PDF is rebuilt) |
 | Share / save copy | `share_plus`; Downloads/Bangla Scanner on Android, Files picker on iOS |
 | OCR | Bangla: Tesseract `ben`; English: ML Kit; Both: Tesseract `ben+eng`; editable result, copy/share/.txt |
-| ID card mode | Front then back, placed on one A4 page at real ID-1 size (85.6 × 53.98 mm) |
-| Settings | Language, theme, default format, default quality, default OCR language |
+| ID card mode | Document type: NID / smart card (ID-1, 85.6 × 53.98 mm, front and back) or passport (ID-3, 125 × 88 mm, photo page plus an optional second page), placed on one A4 page at real size |
+| App lock | PIN (4–8 digits, stored as a salted hash) with optional fingerprint / face unlock (`local_auth`); locks on launch and after 0 / 1 / 5 minutes in the background |
+| Settings | Language, theme, default format, quality and PDF page size, default OCR language, app lock |
 
 Everything runs on the device. No accounts, no cloud.
 
@@ -47,10 +49,11 @@ lib/
     scan/          scanner + gallery, draft document state
     editor/        page list, page editor, filter previews
     export/        image pipeline, PDF builder, save service, share/save to device
-    library/       document repository, list, document viewer
+    library/       document repository (folders, favourites, page rewrite), list, viewer, pages screen
+    lock/          app lock controller (PIN, biometrics, background delay) and lock screen
     ocr/           preprocessing, Tesseract/ML Kit engine, OCR screen
-    id_card/       A4 layout, guided front/back screen
-    settings/      settings model, repository, screen
+    id_card/       A4 layout for ID-1 / ID-3 cards, guided front/back screen
+    settings/      settings model, repository (incl. PIN hash), screen
 packages/flutter_tesseract_ocr/   vendored + patched plugin (see below)
 assets/fonts/      Hind Siliguri (OFL)
 assets/tessdata/   ben/eng traineddata, gzip-compressed
@@ -70,8 +73,10 @@ flutter analyze
 flutter test
 ```
 
-The drift code (`lib/core/storage/app_database.g.dart`) is committed. After
-changing the database schema, regenerate it:
+The drift code (`lib/core/storage/app_database.g.dart`) is committed. The
+schema is at version 2 (folders, favourites and the protected flag were added
+with a migration in `AppDatabase.migration`). After changing the database
+schema, bump `schemaVersion`, add a migration step and regenerate:
 
 ```bash
 dart run build_runner build --delete-conflicting-outputs
@@ -89,9 +94,12 @@ icon) and `prod` (`com.codeinherit.banglascanner`). Every Android `flutter run`
 / `flutter build` needs `--flavor dev` or `--flavor prod`.
 
 - `minSdk` is 24: the Flutter engine and several plugins require it.
-- Permissions (`android/app/src/main/AndroidManifest.xml`): `CAMERA`, and
-  `WRITE_EXTERNAL_STORAGE` only up to Android 9 (Android 10+ saves to
-  Downloads through MediaStore, no permission needed).
+- Permissions (`android/app/src/main/AndroidManifest.xml`): `CAMERA`,
+  `USE_BIOMETRIC` (app lock), and `WRITE_EXTERNAL_STORAGE` only up to
+  Android 9 (Android 10+ saves to Downloads through MediaStore, no permission
+  needed).
+- `MainActivity` extends `FlutterFragmentActivity`, which `local_auth` needs
+  for the biometric prompt.
 - The document scanner UI is provided by Google Play services. On a device
   that has never used it, Play services may download the scanner module
   once (requires internet the first time). Devices without Play services
@@ -110,8 +118,9 @@ flutter run
   the permission_handler macros `PERMISSION_CAMERA`, `PERMISSION_PHOTOS` and
   `PERMISSION_PHOTOS_ADD_ONLY`.
 - `Info.plist` contains Bangla + English texts for
-  `NSCameraUsageDescription`, `NSPhotoLibraryUsageDescription` and
-  `NSPhotoLibraryAddUsageDescription`.
+  `NSCameraUsageDescription`, `NSPhotoLibraryUsageDescription`,
+  `NSPhotoLibraryAddUsageDescription` and `NSFaceIDUsageDescription` (app
+  lock).
 - SwiftyTesseract excludes the arm64 simulator architecture. On Apple
   Silicon Macs, run the simulator under Rosetta or test on a real device.
 
@@ -145,6 +154,19 @@ fixes (listed in its `BANGLA_SCANNER_PATCHES.md`): Gradle 9 / AGP 9
 compatibility (the published version uses `jcenter()`), R8 keep rules for
 release builds, error reporting instead of crashes or hangs, and reading
 models from the documents folder on iOS instead of the read-only bundle.
+
+## PDF password
+
+A protected PDF uses the PDF standard security handler, revision 4, with
+AES-128 (`/V 4 /R 4`, crypt filter `AESV2`) implemented in
+`lib/features/export/data/pdf_encryption.dart` on top of the `pdf` package's
+`PdfEncryption` hook: MD5 from `crypto`, RC4 (only for the `/O` and `/U`
+password hashes the format requires) and AES-CBC written in Dart. The owner
+password is random, so only the user password matters. Readers such as Adobe
+Reader, Chrome, iOS Preview and pypdf open the file with that password; the
+password itself is never stored (`isProtected` only flags the document, and
+re-saving or reordering pages asks for it again). The page JPEGs inside the
+app folder are not encrypted; the app lock covers them.
 
 ## OCR pipeline
 
@@ -243,8 +265,8 @@ device is next online.
 
 ## Not in this version
 
-Cloud sync, accounts, folders, signatures, annotations and AI features are
-planned for later versions.
+Cloud sync, accounts, signatures, annotations and AI features are planned for
+later versions.
 
 ## Licenses
 

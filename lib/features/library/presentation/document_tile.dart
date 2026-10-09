@@ -10,14 +10,14 @@ import '../../../core/utils/formatters.dart';
 import '../data/document_repository.dart';
 import 'document_actions.dart';
 
-enum _TileAction { share, rename, delete }
+enum _TileAction { share, favorite, move, rename, delete }
 
 /// A document row: thumbnail, name, page count, date and size, with a menu
-/// for share / rename / delete.
+/// for share / favourite / move / rename / delete.
 ///
-/// When [selectionOrder] is given the tile is in multi-select mode: the
-/// menu is replaced by a check mark (numbered with the selection order, or
-/// empty when not selected) and taps/long-presses go to [onToggle].
+/// When [selecting] the menu is replaced by a check mark (numbered with the
+/// selection order, or empty when not selected) and taps/long-presses go to
+/// [onToggle].
 class DocumentTile extends ConsumerWidget {
   const DocumentTile({
     super.key,
@@ -91,7 +91,19 @@ class DocumentTile extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(doc.name, style: theme.textTheme.titleMedium, maxLines: 2, overflow: TextOverflow.ellipsis),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: Text(doc.name, style: theme.textTheme.titleMedium, maxLines: 2, overflow: TextOverflow.ellipsis),
+                        ),
+                        if (doc.isFavorite)
+                          Padding(
+                            padding: const EdgeInsets.only(left: 4, top: 2),
+                            child: Icon(Icons.star_rounded, size: 20, color: theme.colorScheme.tertiary, semanticLabel: l10n.favorites),
+                          ),
+                      ],
+                    ),
                     const SizedBox(height: 4),
                     Row(
                       children: [
@@ -101,6 +113,10 @@ class DocumentTile extends ConsumerWidget {
                           color: theme.colorScheme.primary,
                         ),
                         const SizedBox(width: 4),
+                        if (doc.isProtected) ...[
+                          Icon(Icons.lock_outline, size: 14, color: theme.colorScheme.primary, semanticLabel: l10n.protectedBadge),
+                          const SizedBox(width: 4),
+                        ],
                         Flexible(
                           child: Text(
                             '${l10n.editorPages(doc.pageCount)} · ${Formatters.fileSize(doc.sizeBytes, locale)}',
@@ -134,6 +150,10 @@ class DocumentTile extends ConsumerWidget {
                     switch (action) {
                       case _TileAction.share:
                         DocumentActions.share(context, ref, doc);
+                      case _TileAction.favorite:
+                        DocumentActions.toggleFavorite(context, ref, doc);
+                      case _TileAction.move:
+                        DocumentActions.moveToFolder(context, ref, [doc]);
                       case _TileAction.rename:
                         DocumentActions.rename(context, ref, doc);
                       case _TileAction.delete:
@@ -142,6 +162,14 @@ class DocumentTile extends ConsumerWidget {
                   },
                   itemBuilder: (context) => [
                     PopupMenuItem(value: _TileAction.share, child: ListTile(leading: const Icon(Icons.share_outlined), title: Text(l10n.share))),
+                    PopupMenuItem(
+                      value: _TileAction.favorite,
+                      child: ListTile(
+                        leading: Icon(doc.isFavorite ? Icons.star_outline_rounded : Icons.star_rounded),
+                        title: Text(doc.isFavorite ? l10n.removeFromFavorites : l10n.addToFavorites),
+                      ),
+                    ),
+                    PopupMenuItem(value: _TileAction.move, child: ListTile(leading: const Icon(Icons.drive_file_move_outline), title: Text(l10n.moveToFolder))),
                     PopupMenuItem(value: _TileAction.rename, child: ListTile(leading: const Icon(Icons.drive_file_rename_outline), title: Text(l10n.rename))),
                     PopupMenuItem(value: _TileAction.delete, child: ListTile(leading: const Icon(Icons.delete_outline), title: Text(l10n.delete))),
                   ],

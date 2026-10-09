@@ -29,6 +29,8 @@
 	<string>বাংলা স্ক্যানার মাইক্রোফোন ব্যবহার করে না। (Bangla Scanner does not record audio; the camera component requires this entry.)</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>গ্যালারির ছবি থেকে ডকুমেন্ট তৈরি করতে ছবির লাইব্রেরি ব্যবহার করা হয়। (Your photo library is used to turn photos into documents.)</string>
+	<key>NSFaceIDUsageDescription</key>
+	<string>অ্যাপ লক খুলতে Face ID ব্যবহার করা হয়। (Face ID is used to unlock the app lock.)</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>স্ক্যান করা ছবি আপনার ফটো লাইব্রেরিতে সংরক্ষণ করতে অনুমতি দরকার। (Needed to save scanned images to your photo library.)</string>
 	<key>CFBundlePackageType</key>

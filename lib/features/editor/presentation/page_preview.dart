@@ -8,7 +8,7 @@ import '../../../core/models/enums.dart';
 import '../../scan/data/draft_document.dart';
 import '../application/page_preview_providers.dart';
 
-/// Shows a draft page with its rotation and filter applied.
+/// Shows a draft page with its rotation, filter and adjustments applied.
 class PagePreview extends ConsumerStatefulWidget {
   const PagePreview({super.key, required this.page, this.cacheWidth, this.fit = BoxFit.contain});
 
@@ -41,13 +41,14 @@ class _PagePreviewState extends ConsumerState<PagePreview> {
   @override
   Widget build(BuildContext context) {
     final page = widget.page;
-    if (page.filter == PageFilter.original) {
+    if (page.filter == PageFilter.original && page.adjustments.isNeutral) {
       _filtered = null;
     } else {
       final preview = ref.watch(
         filteredPreviewProvider((
           source: (path: page.imagePath, revision: page.revision, maxEdge: widget.cacheWidth ?? PagePreview.fullSize),
           filter: page.filter,
+          adjustments: page.adjustments,
         )),
       );
       // On error the unfiltered image below shows instead.

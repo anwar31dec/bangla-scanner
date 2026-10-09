@@ -578,4 +578,315 @@ class AppLocalizationsEn extends AppLocalizations {
   String settingsVersion(String version) {
     return 'Version $version';
   }
+
+  @override
+  String get folders => 'Folders';
+
+  @override
+  String get filterAll => 'All';
+
+  @override
+  String get favorites => 'Favourites';
+
+  @override
+  String get newFolder => 'New folder';
+
+  @override
+  String get folderName => 'Folder name';
+
+  @override
+  String get renameFolder => 'Rename folder';
+
+  @override
+  String get deleteFolder => 'Delete folder';
+
+  @override
+  String get deleteFolderTitle => 'Delete folder?';
+
+  @override
+  String deleteFolderBody(String name) {
+    return '\"$name\" will be deleted. Its documents stay in the library.';
+  }
+
+  @override
+  String get folderCreated => 'Folder created';
+
+  @override
+  String get moveToFolder => 'Move to folder';
+
+  @override
+  String get noFolder => 'No folder';
+
+  @override
+  String movedToFolder(String name) {
+    return 'Moved to \"$name\"';
+  }
+
+  @override
+  String get removedFromFolder => 'Removed from folder';
+
+  @override
+  String get noFoldersYet =>
+      'No folders yet. Create one to organise your documents.';
+
+  @override
+  String get addToFavorites => 'Add to favourites';
+
+  @override
+  String get removeFromFavorites => 'Remove from favourites';
+
+  @override
+  String get favoritesEmpty => 'Star a document to find it here quickly.';
+
+  @override
+  String get folderEmpty =>
+      'This folder is empty. Move documents here from their menu.';
+
+  @override
+  String get select => 'Select';
+
+  @override
+  String selectedCount(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString selected',
+      one: '1 selected',
+      zero: 'Select documents',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get selectAll => 'Select all';
+
+  @override
+  String get selectionHint =>
+      'Tap documents to select them. Merge joins them in the order you tapped.';
+
+  @override
+  String deleteSelectedTitle(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Delete $countString documents?',
+      one: 'Delete 1 document?',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get deleteSelectedBody => 'They will be deleted permanently.';
+
+  @override
+  String deletedCount(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countString documents deleted',
+      one: '1 document deleted',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get protectWithPassword => 'Protect with a password';
+
+  @override
+  String get pdfPassword => 'PDF password';
+
+  @override
+  String get passwordHint =>
+      'The PDF opens only with this password. Keep it safe: it cannot be recovered.';
+
+  @override
+  String get passwordTooShort => 'Use at least 4 characters';
+
+  @override
+  String get enterPdfPassword => 'Enter the PDF password';
+
+  @override
+  String get enterPdfPasswordBody =>
+      'This PDF is protected. Enter its password so it can be rebuilt with the new pages.';
+
+  @override
+  String get protectedBadge => 'Password protected';
+
+  @override
+  String get pageSize => 'Page size';
+
+  @override
+  String get pageSizeAuto => 'Fit to scan';
+
+  @override
+  String get pageSizeA4 => 'A4';
+
+  @override
+  String get pageSizeLetter => 'Letter';
+
+  @override
+  String get pageSizeLegal => 'Legal';
+
+  @override
+  String get pageSizeHint =>
+      'Fit to scan keeps each page the shape of the scan. A4, Letter and Legal place the scan on real paper for printing.';
+
+  @override
+  String get settingsDefaultPageSize => 'Default PDF page size';
+
+  @override
+  String get settingsAppLock => 'App lock';
+
+  @override
+  String get appLockEnable => 'Lock the app with a PIN';
+
+  @override
+  String get appLockBiometric => 'Unlock with fingerprint or face';
+
+  @override
+  String get appLockDelay => 'Lock after leaving the app';
+
+  @override
+  String get lockImmediately => 'Immediately';
+
+  @override
+  String get lockAfterOneMinute => '1 minute';
+
+  @override
+  String get lockAfterFiveMinutes => '5 minutes';
+
+  @override
+  String get changePin => 'Change PIN';
+
+  @override
+  String get setPinTitle => 'Set a PIN';
+
+  @override
+  String get setPinHint =>
+      'Enter 4 to 8 digits. You will need it to open the app.';
+
+  @override
+  String get confirmPinTitle => 'Enter the PIN again';
+
+  @override
+  String get enterCurrentPin => 'Enter your current PIN';
+
+  @override
+  String get pinMismatch => 'The PINs do not match. Try again.';
+
+  @override
+  String get pinTooShort => 'The PIN needs at least 4 digits.';
+
+  @override
+  String get enterPin => 'Enter your PIN';
+
+  @override
+  String get wrongPin => 'Wrong PIN';
+
+  @override
+  String get lockedTitle => 'Bangla Scanner is locked';
+
+  @override
+  String get unlockWithBiometrics => 'Use fingerprint or face';
+
+  @override
+  String get biometricReason => 'Unlock Bangla Scanner';
+
+  @override
+  String get biometricUnavailable =>
+      'No fingerprint or face unlock is set up on this phone.';
+
+  @override
+  String get appLockOn => 'App lock is on';
+
+  @override
+  String get appLockOff => 'App lock is off';
+
+  @override
+  String get adjust => 'Adjust';
+
+  @override
+  String get filterStrength => 'Filter strength';
+
+  @override
+  String get brightness => 'Brightness';
+
+  @override
+  String get contrast => 'Contrast';
+
+  @override
+  String get resetAdjustments => 'Reset';
+
+  @override
+  String get bookSplit => 'Book split';
+
+  @override
+  String get bookSplitTitle => 'Split this page in two?';
+
+  @override
+  String get bookSplitBody =>
+      'For a photo of an open book: the page is cut into a left and a right page (top and bottom for a tall photo).';
+
+  @override
+  String get split => 'Split';
+
+  @override
+  String get pageSplitDone => 'Page split into two pages';
+
+  @override
+  String get reorderPages => 'Reorder pages';
+
+  @override
+  String get pagesTitle => 'Pages';
+
+  @override
+  String get pagesHint =>
+      'Hold and drag to reorder. Tap the bin to remove a page.';
+
+  @override
+  String get apply => 'Apply';
+
+  @override
+  String get pagesUpdated => 'Pages updated';
+
+  @override
+  String get pagesNeedOne => 'A document needs at least one page.';
+
+  @override
+  String get zoomHint => 'Double-tap to zoom. Pinch to zoom in and out.';
+
+  @override
+  String get cardKind => 'Document type';
+
+  @override
+  String get cardKindId => 'NID / Smart card';
+
+  @override
+  String get cardKindPassport => 'Passport';
+
+  @override
+  String get idCardHintPassport =>
+      'Place the passport\'s photo page on a dark, flat surface and scan it.';
+
+  @override
+  String get idCardPassportSecond => 'Second page (optional)';
+
+  @override
+  String get idCardPassportReady =>
+      'The page will be placed on A4 at real passport size.';
+
+  @override
+  String get idCardOptional => 'Optional';
 }

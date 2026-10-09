@@ -1045,6 +1045,522 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Version {version}'**
   String settingsVersion(String version);
+
+  /// No description provided for @folders.
+  ///
+  /// In en, this message translates to:
+  /// **'Folders'**
+  String get folders;
+
+  /// No description provided for @filterAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get filterAll;
+
+  /// No description provided for @favorites.
+  ///
+  /// In en, this message translates to:
+  /// **'Favourites'**
+  String get favorites;
+
+  /// No description provided for @newFolder.
+  ///
+  /// In en, this message translates to:
+  /// **'New folder'**
+  String get newFolder;
+
+  /// No description provided for @folderName.
+  ///
+  /// In en, this message translates to:
+  /// **'Folder name'**
+  String get folderName;
+
+  /// No description provided for @renameFolder.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename folder'**
+  String get renameFolder;
+
+  /// No description provided for @deleteFolder.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete folder'**
+  String get deleteFolder;
+
+  /// No description provided for @deleteFolderTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete folder?'**
+  String get deleteFolderTitle;
+
+  /// No description provided for @deleteFolderBody.
+  ///
+  /// In en, this message translates to:
+  /// **'\"{name}\" will be deleted. Its documents stay in the library.'**
+  String deleteFolderBody(String name);
+
+  /// No description provided for @folderCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'Folder created'**
+  String get folderCreated;
+
+  /// No description provided for @moveToFolder.
+  ///
+  /// In en, this message translates to:
+  /// **'Move to folder'**
+  String get moveToFolder;
+
+  /// No description provided for @noFolder.
+  ///
+  /// In en, this message translates to:
+  /// **'No folder'**
+  String get noFolder;
+
+  /// No description provided for @movedToFolder.
+  ///
+  /// In en, this message translates to:
+  /// **'Moved to \"{name}\"'**
+  String movedToFolder(String name);
+
+  /// No description provided for @removedFromFolder.
+  ///
+  /// In en, this message translates to:
+  /// **'Removed from folder'**
+  String get removedFromFolder;
+
+  /// No description provided for @noFoldersYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No folders yet. Create one to organise your documents.'**
+  String get noFoldersYet;
+
+  /// No description provided for @addToFavorites.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to favourites'**
+  String get addToFavorites;
+
+  /// No description provided for @removeFromFavorites.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove from favourites'**
+  String get removeFromFavorites;
+
+  /// No description provided for @favoritesEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Star a document to find it here quickly.'**
+  String get favoritesEmpty;
+
+  /// No description provided for @folderEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'This folder is empty. Move documents here from their menu.'**
+  String get folderEmpty;
+
+  /// No description provided for @select.
+  ///
+  /// In en, this message translates to:
+  /// **'Select'**
+  String get select;
+
+  /// No description provided for @selectedCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{Select documents} =1{1 selected} other{{count} selected}}'**
+  String selectedCount(int count);
+
+  /// No description provided for @selectAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Select all'**
+  String get selectAll;
+
+  /// No description provided for @selectionHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap documents to select them. Merge joins them in the order you tapped.'**
+  String get selectionHint;
+
+  /// No description provided for @deleteSelectedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Delete 1 document?} other{Delete {count} documents?}}'**
+  String deleteSelectedTitle(int count);
+
+  /// No description provided for @deleteSelectedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'They will be deleted permanently.'**
+  String get deleteSelectedBody;
+
+  /// No description provided for @deletedCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 document deleted} other{{count} documents deleted}}'**
+  String deletedCount(int count);
+
+  /// No description provided for @protectWithPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Protect with a password'**
+  String get protectWithPassword;
+
+  /// No description provided for @pdfPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'PDF password'**
+  String get pdfPassword;
+
+  /// No description provided for @passwordHint.
+  ///
+  /// In en, this message translates to:
+  /// **'The PDF opens only with this password. Keep it safe: it cannot be recovered.'**
+  String get passwordHint;
+
+  /// No description provided for @passwordTooShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Use at least 4 characters'**
+  String get passwordTooShort;
+
+  /// No description provided for @enterPdfPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the PDF password'**
+  String get enterPdfPassword;
+
+  /// No description provided for @enterPdfPasswordBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This PDF is protected. Enter its password so it can be rebuilt with the new pages.'**
+  String get enterPdfPasswordBody;
+
+  /// No description provided for @protectedBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'Password protected'**
+  String get protectedBadge;
+
+  /// No description provided for @pageSize.
+  ///
+  /// In en, this message translates to:
+  /// **'Page size'**
+  String get pageSize;
+
+  /// No description provided for @pageSizeAuto.
+  ///
+  /// In en, this message translates to:
+  /// **'Fit to scan'**
+  String get pageSizeAuto;
+
+  /// No description provided for @pageSizeA4.
+  ///
+  /// In en, this message translates to:
+  /// **'A4'**
+  String get pageSizeA4;
+
+  /// No description provided for @pageSizeLetter.
+  ///
+  /// In en, this message translates to:
+  /// **'Letter'**
+  String get pageSizeLetter;
+
+  /// No description provided for @pageSizeLegal.
+  ///
+  /// In en, this message translates to:
+  /// **'Legal'**
+  String get pageSizeLegal;
+
+  /// No description provided for @pageSizeHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Fit to scan keeps each page the shape of the scan. A4, Letter and Legal place the scan on real paper for printing.'**
+  String get pageSizeHint;
+
+  /// No description provided for @settingsDefaultPageSize.
+  ///
+  /// In en, this message translates to:
+  /// **'Default PDF page size'**
+  String get settingsDefaultPageSize;
+
+  /// No description provided for @settingsAppLock.
+  ///
+  /// In en, this message translates to:
+  /// **'App lock'**
+  String get settingsAppLock;
+
+  /// No description provided for @appLockEnable.
+  ///
+  /// In en, this message translates to:
+  /// **'Lock the app with a PIN'**
+  String get appLockEnable;
+
+  /// No description provided for @appLockBiometric.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock with fingerprint or face'**
+  String get appLockBiometric;
+
+  /// No description provided for @appLockDelay.
+  ///
+  /// In en, this message translates to:
+  /// **'Lock after leaving the app'**
+  String get appLockDelay;
+
+  /// No description provided for @lockImmediately.
+  ///
+  /// In en, this message translates to:
+  /// **'Immediately'**
+  String get lockImmediately;
+
+  /// No description provided for @lockAfterOneMinute.
+  ///
+  /// In en, this message translates to:
+  /// **'1 minute'**
+  String get lockAfterOneMinute;
+
+  /// No description provided for @lockAfterFiveMinutes.
+  ///
+  /// In en, this message translates to:
+  /// **'5 minutes'**
+  String get lockAfterFiveMinutes;
+
+  /// No description provided for @changePin.
+  ///
+  /// In en, this message translates to:
+  /// **'Change PIN'**
+  String get changePin;
+
+  /// No description provided for @setPinTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Set a PIN'**
+  String get setPinTitle;
+
+  /// No description provided for @setPinHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter 4 to 8 digits. You will need it to open the app.'**
+  String get setPinHint;
+
+  /// No description provided for @confirmPinTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the PIN again'**
+  String get confirmPinTitle;
+
+  /// No description provided for @enterCurrentPin.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your current PIN'**
+  String get enterCurrentPin;
+
+  /// No description provided for @pinMismatch.
+  ///
+  /// In en, this message translates to:
+  /// **'The PINs do not match. Try again.'**
+  String get pinMismatch;
+
+  /// No description provided for @pinTooShort.
+  ///
+  /// In en, this message translates to:
+  /// **'The PIN needs at least 4 digits.'**
+  String get pinTooShort;
+
+  /// No description provided for @enterPin.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your PIN'**
+  String get enterPin;
+
+  /// No description provided for @wrongPin.
+  ///
+  /// In en, this message translates to:
+  /// **'Wrong PIN'**
+  String get wrongPin;
+
+  /// No description provided for @lockedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Bangla Scanner is locked'**
+  String get lockedTitle;
+
+  /// No description provided for @unlockWithBiometrics.
+  ///
+  /// In en, this message translates to:
+  /// **'Use fingerprint or face'**
+  String get unlockWithBiometrics;
+
+  /// No description provided for @biometricReason.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock Bangla Scanner'**
+  String get biometricReason;
+
+  /// No description provided for @biometricUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'No fingerprint or face unlock is set up on this phone.'**
+  String get biometricUnavailable;
+
+  /// No description provided for @appLockOn.
+  ///
+  /// In en, this message translates to:
+  /// **'App lock is on'**
+  String get appLockOn;
+
+  /// No description provided for @appLockOff.
+  ///
+  /// In en, this message translates to:
+  /// **'App lock is off'**
+  String get appLockOff;
+
+  /// No description provided for @adjust.
+  ///
+  /// In en, this message translates to:
+  /// **'Adjust'**
+  String get adjust;
+
+  /// No description provided for @filterStrength.
+  ///
+  /// In en, this message translates to:
+  /// **'Filter strength'**
+  String get filterStrength;
+
+  /// No description provided for @brightness.
+  ///
+  /// In en, this message translates to:
+  /// **'Brightness'**
+  String get brightness;
+
+  /// No description provided for @contrast.
+  ///
+  /// In en, this message translates to:
+  /// **'Contrast'**
+  String get contrast;
+
+  /// No description provided for @resetAdjustments.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset'**
+  String get resetAdjustments;
+
+  /// No description provided for @bookSplit.
+  ///
+  /// In en, this message translates to:
+  /// **'Book split'**
+  String get bookSplit;
+
+  /// No description provided for @bookSplitTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Split this page in two?'**
+  String get bookSplitTitle;
+
+  /// No description provided for @bookSplitBody.
+  ///
+  /// In en, this message translates to:
+  /// **'For a photo of an open book: the page is cut into a left and a right page (top and bottom for a tall photo).'**
+  String get bookSplitBody;
+
+  /// No description provided for @split.
+  ///
+  /// In en, this message translates to:
+  /// **'Split'**
+  String get split;
+
+  /// No description provided for @pageSplitDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Page split into two pages'**
+  String get pageSplitDone;
+
+  /// No description provided for @reorderPages.
+  ///
+  /// In en, this message translates to:
+  /// **'Reorder pages'**
+  String get reorderPages;
+
+  /// No description provided for @pagesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Pages'**
+  String get pagesTitle;
+
+  /// No description provided for @pagesHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Hold and drag to reorder. Tap the bin to remove a page.'**
+  String get pagesHint;
+
+  /// No description provided for @apply.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply'**
+  String get apply;
+
+  /// No description provided for @pagesUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Pages updated'**
+  String get pagesUpdated;
+
+  /// No description provided for @pagesNeedOne.
+  ///
+  /// In en, this message translates to:
+  /// **'A document needs at least one page.'**
+  String get pagesNeedOne;
+
+  /// No description provided for @zoomHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Double-tap to zoom. Pinch to zoom in and out.'**
+  String get zoomHint;
+
+  /// No description provided for @cardKind.
+  ///
+  /// In en, this message translates to:
+  /// **'Document type'**
+  String get cardKind;
+
+  /// No description provided for @cardKindId.
+  ///
+  /// In en, this message translates to:
+  /// **'NID / Smart card'**
+  String get cardKindId;
+
+  /// No description provided for @cardKindPassport.
+  ///
+  /// In en, this message translates to:
+  /// **'Passport'**
+  String get cardKindPassport;
+
+  /// No description provided for @idCardHintPassport.
+  ///
+  /// In en, this message translates to:
+  /// **'Place the passport\'s photo page on a dark, flat surface and scan it.'**
+  String get idCardHintPassport;
+
+  /// No description provided for @idCardPassportSecond.
+  ///
+  /// In en, this message translates to:
+  /// **'Second page (optional)'**
+  String get idCardPassportSecond;
+
+  /// No description provided for @idCardPassportReady.
+  ///
+  /// In en, this message translates to:
+  /// **'The page will be placed on A4 at real passport size.'**
+  String get idCardPassportReady;
+
+  /// No description provided for @idCardOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Optional'**
+  String get idCardOptional;
 }
 
 class _AppLocalizationsDelegate
