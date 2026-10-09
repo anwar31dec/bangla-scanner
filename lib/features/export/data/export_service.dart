@@ -79,18 +79,7 @@ class ExportService {
       for (var i = 0; i < total; i++) {
         final page = draft.pages[i];
         final source = await File(page.imagePath).readAsBytes();
-        final turns = page.quarterTurns;
-        final filter = page.filter;
-        final adjustments = page.adjustments;
-        final jpeg = await Isolate.run(
-          () => ImageProcessing.processPage(
-            source,
-            quarterTurns: turns,
-            filter: filter,
-            adjustments: adjustments,
-            quality: quality,
-          ),
-        );
+        final jpeg = await _processPageInBackground(source, page, quality);
         final fileName = 'page_${(i + 1).toString().padLeft(3, '0')}.jpg';
         final pagePath = p.join(pagesDir.path, fileName);
         await File(pagePath).writeAsBytes(jpeg, flush: true);
@@ -99,8 +88,7 @@ class ExportService {
         onProgress?.call(i + 1, total);
       }
 
-      final first = processed.first;
-      final thumb = await Isolate.run(() => ImageProcessing.thumbnail(first));
+      final thumb = await _thumbnailInBackground(processed.first);
       await File(p.join(staging.path, DocumentRepository.thumbFileName)).writeAsBytes(thumb, flush: true);
 
       List<PageText?> texts = const [];
@@ -163,6 +151,28 @@ class ExportService {
       throw AppException.from(e);
     }
   }
+
+  // The isolate helpers are separate functions on purpose: a closure
+  // created inside [save] shares that method's context with every other
+  // closure made there, so it would drag [save]'s callbacks (which capture
+  // a widget State) into the isolate message and the send would fail.
+
+  static Future<Uint8List> _processPageInBackground(Uint8List source, DraftPage page, ExportQuality quality) {
+    final turns = page.quarterTurns;
+    final filter = page.filter;
+    final adjustments = page.adjustments;
+    return Isolate.run(
+      () => ImageProcessing.processPage(
+        source,
+        quarterTurns: turns,
+        filter: filter,
+        adjustments: adjustments,
+        quality: quality,
+      ),
+    );
+  }
+
+  static Future<Uint8List> _thumbnailInBackground(Uint8List jpeg) => Isolate.run(() => ImageProcessing.thumbnail(jpeg));
 }
 
 final exportServiceProvider = FutureProvider<ExportService>((ref) async {

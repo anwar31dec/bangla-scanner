@@ -82,6 +82,7 @@ void main() {
       format: SaveFormat.pdf,
       quality: ExportQuality.low,
       onProgress: (_, _) => unsendable.hashCode,
+      onOcrProgress: (_, _) => unsendable.hashCode,
     );
     expect(doc.pageCount, 2);
   });

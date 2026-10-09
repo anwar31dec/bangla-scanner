@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -124,8 +126,13 @@ class _SaveSheetState extends ConsumerState<_SaveSheet> {
     final l10n = context.l10n;
     final theme = Theme.of(context);
     final isPdf = _format == SaveFormat.pdf;
+    // The sheet reaches the bottom edge of the screen (useSafeArea only
+    // insets the top), so keep the Save button above the system navigation
+    // bar, or above the keyboard when it is open.
+    final media = MediaQuery.of(context);
+    final bottomInset = math.max(media.viewInsets.bottom, media.viewPadding.bottom);
     return Padding(
-      padding: EdgeInsets.fromLTRB(20, 0, 20, 20 + MediaQuery.viewInsetsOf(context).bottom),
+      padding: EdgeInsets.fromLTRB(20, 0, 20, 20 + bottomInset),
       child: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
