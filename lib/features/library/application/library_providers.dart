@@ -42,6 +42,13 @@ final libraryDocumentsProvider = StreamProvider<List<DocumentRow>>((ref) async* 
   );
 });
 
+/// For the current search, the documents whose recognized text matches it,
+/// with the text of the matching page (to show an excerpt in the list).
+final libraryTextMatchesProvider = StreamProvider<Map<String, String>>((ref) async* {
+  final repo = await ref.watch(documentRepositoryProvider.future);
+  yield* repo.watchTextMatches(ref.watch(librarySearchProvider));
+});
+
 /// Every document, regardless of the library's search and filter (backup).
 final allDocumentsProvider = StreamProvider<List<DocumentRow>>((ref) async* {
   final repo = await ref.watch(documentRepositoryProvider.future);

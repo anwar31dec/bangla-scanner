@@ -12,6 +12,7 @@ class AppSettings {
     this.defaultQuality = ExportQuality.medium,
     this.defaultPageSize = PdfPageSize.auto,
     this.defaultOcrLanguage = OcrLanguage.bangla,
+    this.searchablePdf = false,
     this.appLockEnabled = false,
     this.biometricUnlock = false,
     this.lockDelay = LockDelay.oneMinute,
@@ -24,6 +25,9 @@ class AppSettings {
   final ExportQuality defaultQuality;
   final PdfPageSize defaultPageSize;
   final OcrLanguage defaultOcrLanguage;
+
+  /// Pre-selects "searchable PDF" (OCR while saving) in the save sheet.
+  final bool searchablePdf;
 
   /// The app asks for a PIN (see `SettingsRepository.pinHash`) on launch
   /// and after [lockDelay] in the background.
@@ -42,6 +46,7 @@ class AppSettings {
     ExportQuality? defaultQuality,
     PdfPageSize? defaultPageSize,
     OcrLanguage? defaultOcrLanguage,
+    bool? searchablePdf,
     bool? appLockEnabled,
     bool? biometricUnlock,
     LockDelay? lockDelay,
@@ -53,6 +58,7 @@ class AppSettings {
         defaultQuality: defaultQuality ?? this.defaultQuality,
         defaultPageSize: defaultPageSize ?? this.defaultPageSize,
         defaultOcrLanguage: defaultOcrLanguage ?? this.defaultOcrLanguage,
+        searchablePdf: searchablePdf ?? this.searchablePdf,
         appLockEnabled: appLockEnabled ?? this.appLockEnabled,
         biometricUnlock: biometricUnlock ?? this.biometricUnlock,
         lockDelay: lockDelay ?? this.lockDelay,
@@ -67,6 +73,7 @@ class AppSettings {
       other.defaultQuality == defaultQuality &&
       other.defaultPageSize == defaultPageSize &&
       other.defaultOcrLanguage == defaultOcrLanguage &&
+      other.searchablePdf == searchablePdf &&
       other.appLockEnabled == appLockEnabled &&
       other.biometricUnlock == biometricUnlock &&
       other.lockDelay == lockDelay;
@@ -79,6 +86,7 @@ class AppSettings {
         defaultQuality,
         defaultPageSize,
         defaultOcrLanguage,
+        searchablePdf,
         appLockEnabled,
         biometricUnlock,
         lockDelay,

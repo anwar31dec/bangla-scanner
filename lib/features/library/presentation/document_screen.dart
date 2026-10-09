@@ -126,6 +126,11 @@ class _DocumentScreenState extends ConsumerState<DocumentScreen> {
                     message: l10n.protectedBadge,
                     child: Icon(Icons.lock_outline, size: 16, color: theme.colorScheme.primary),
                   ),
+                if (doc.hasText)
+                  Tooltip(
+                    message: l10n.searchableBadge,
+                    child: Icon(Icons.text_snippet_outlined, size: 16, color: theme.colorScheme.primary),
+                  ),
               ],
             ),
           ),

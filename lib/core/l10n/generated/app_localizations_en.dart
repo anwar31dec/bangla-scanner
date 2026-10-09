@@ -319,7 +319,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get libraryTitle => 'My documents';
 
   @override
-  String get searchHint => 'Search by name';
+  String get searchHint => 'Search by name or text';
 
   @override
   String get sortBy => 'Sort';
@@ -340,7 +340,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get libraryEmpty => 'Your scanned documents will appear here.';
 
   @override
-  String get librarySearchEmpty => 'No document found with this name.';
+  String get librarySearchEmpty => 'No document found with this name or text.';
 
   @override
   String get rename => 'Rename';
@@ -723,6 +723,40 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get protectedBadge => 'Password protected';
+
+  @override
+  String get searchableBadge => 'Searchable (text recognized)';
+
+  @override
+  String textMatch(String snippet) {
+    return 'In text: $snippet';
+  }
+
+  @override
+  String get searchablePdf => 'Searchable PDF (recognize text)';
+
+  @override
+  String get searchablePdfHint =>
+      'Reads the text while saving, so you can search inside the PDF in any viewer and find the document by its words in the library. Takes longer.';
+
+  @override
+  String get settingsSearchablePdf => 'Make PDFs searchable';
+
+  @override
+  String get settingsSearchablePdfHint =>
+      'Recognize the text whenever a PDF is saved (can be changed per document).';
+
+  @override
+  String get ocrTextSaved =>
+      'Text saved. The document can now be found by its words.';
+
+  @override
+  String get ocrPdfNotUpdated =>
+      'Text saved for search, but the PDF was left as it is without its password.';
+
+  @override
+  String get enterPdfPasswordOcrBody =>
+      'This PDF is protected. Enter its password to add the recognized text to it.';
 
   @override
   String get pageSize => 'Page size';

@@ -9,7 +9,9 @@ import 'package:banglascanner/core/utils/app_exception.dart';
 import 'package:banglascanner/features/backup/data/backup_manifest.dart';
 import 'package:banglascanner/features/backup/data/backup_service.dart';
 import 'package:banglascanner/features/export/data/export_service.dart';
+import 'package:banglascanner/features/export/data/pdf_builder.dart';
 import 'package:banglascanner/features/library/data/document_repository.dart';
+import 'package:banglascanner/features/ocr/data/ocr_result.dart';
 import 'package:banglascanner/features/scan/data/draft_document.dart';
 import 'package:drift/drift.dart' show driftRuntimeOptions;
 import 'package:drift/native.dart';
@@ -17,6 +19,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart' as p;
 
 import '../helpers.dart';
+import '../ocr/fake_engine.dart';
 
 void main() {
   late Directory root;
@@ -34,7 +37,7 @@ void main() {
       Directory(p.join(root.path, 'tmp'))..createSync(),
     );
     db = AppDatabase(NativeDatabase.memory());
-    repo = DocumentRepository(db, paths);
+    repo = DocumentRepository(db, paths, loadFont: () => File(TextLayerFont.asset).readAsBytes());
     backup = BackupService(db, paths, appVersion: 'test');
   });
 
@@ -48,6 +51,7 @@ void main() {
     SaveFormat format = SaveFormat.pdf,
     int pages = 2,
     String? folderId,
+    OcrLanguage? ocr,
   }) async {
     final dir = Directory(p.join(root.path, 'work', name))..createSync(recursive: true);
     final list = <DraftPage>[];
@@ -55,12 +59,13 @@ void main() {
       final f = File(p.join(dir.path, 'p$i.jpg'))..writeAsBytesSync(fakeDocumentJpeg(width: 200, height: 260));
       list.add(DraftPage(id: '$name-$i', imagePath: f.path));
     }
-    return ExportService(repo, paths).save(
+    return ExportService(repo, paths, ocrEngine: FakeOcrEngine()).save(
       draft: DraftDocument(workDirPath: dir.path, pages: list),
       name: name,
       format: format,
       quality: ExportQuality.low,
       folderId: folderId,
+      ocrLanguage: ocr,
     );
   }
 
@@ -101,6 +106,28 @@ void main() {
     // Already-compressed files are stored, not deflated.
     final pdf = archive.find('library/${a.id}/document.pdf')!;
     expect(pdf.readBytes()!.length, File(p.join(repo.dirOf(a).path, 'document.pdf')).lengthSync());
+  });
+
+  test('recognized text travels with the backup', () async {
+    final a = await saveDoc('Alpha', ocr: OcrLanguage.both);
+    final zip = await backup.createBackup();
+    final zipCopy = File(p.join(root.path, 'kept.zip'))..writeAsBytesSync(zip.readAsBytesSync());
+    final manifest = await backup.inspect(zipCopy.path);
+    final texts = manifest.documents.single.texts;
+    expect(texts.map((t) => t.pageIndex), [0, 1]);
+    expect(texts.first.text.text, 'Invoice 1\nমোট টাকা ৫০০');
+    expect(texts.first.text.words.single.text, 'Invoice');
+    expect(texts.first.language, OcrLanguage.both);
+
+    await repo.delete(a);
+    expect(await db.pageTextsOf(a.id), isEmpty);
+    await backup.restore(zipCopy.path);
+    final restored = (await repo.get(a.id))!;
+    expect(restored.hasText, isTrue);
+    final back = await repo.pageTextsOf(restored);
+    expect(back.map((t) => t!.text), ['Invoice 1\nমোট টাকা ৫০০', 'Invoice 2\nমোট টাকা ৫০০']);
+    expect(back.first!.words, const [OcrWord('Invoice', left: 0, top: 0, right: 0.1, bottom: 0.05)]);
+    expect((await repo.watchAll(search: 'টাকা').first).map((d) => d.id), [a.id]);
   });
 
   test('restore into an empty library brings documents, folders and files back', () async {

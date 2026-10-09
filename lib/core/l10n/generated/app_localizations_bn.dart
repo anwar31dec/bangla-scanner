@@ -317,7 +317,7 @@ class AppLocalizationsBn extends AppLocalizations {
   String get libraryTitle => 'আমার ডকুমেন্ট';
 
   @override
-  String get searchHint => 'নাম দিয়ে খুঁজুন';
+  String get searchHint => 'নাম বা লেখা দিয়ে খুঁজুন';
 
   @override
   String get sortBy => 'সাজান';
@@ -338,7 +338,8 @@ class AppLocalizationsBn extends AppLocalizations {
   String get libraryEmpty => 'আপনার স্ক্যান করা ডকুমেন্ট এখানে দেখা যাবে।';
 
   @override
-  String get librarySearchEmpty => 'এই নামে কোনো ডকুমেন্ট পাওয়া যায়নি।';
+  String get librarySearchEmpty =>
+      'এই নাম বা লেখার কোনো ডকুমেন্ট পাওয়া যায়নি।';
 
   @override
   String get rename => 'নাম বদলান';
@@ -719,6 +720,40 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get protectedBadge => 'পাসওয়ার্ড সুরক্ষিত';
+
+  @override
+  String get searchableBadge => 'খোঁজা যায় (লেখা চেনা হয়েছে)';
+
+  @override
+  String textMatch(String snippet) {
+    return 'লেখায়: $snippet';
+  }
+
+  @override
+  String get searchablePdf => 'সার্চযোগ্য PDF (লেখা চেনা)';
+
+  @override
+  String get searchablePdfHint =>
+      'সংরক্ষণের সময় লেখা পড়ে নেয়, তাই যেকোনো PDF ভিউয়ারে PDF-এর ভেতরে খোঁজা যায় আর লাইব্রেরিতে ডকুমেন্ট তার শব্দ দিয়ে পাওয়া যায়। সময় বেশি লাগে।';
+
+  @override
+  String get settingsSearchablePdf => 'PDF সার্চযোগ্য করুন';
+
+  @override
+  String get settingsSearchablePdfHint =>
+      'PDF সংরক্ষণের সময় প্রতিবার লেখা চিনে নেওয়া হবে (প্রতিটি ডকুমেন্টে বদলানো যায়)।';
+
+  @override
+  String get ocrTextSaved =>
+      'লেখা সংরক্ষিত হয়েছে। এখন ডকুমেন্টটি তার শব্দ দিয়ে খোঁজা যাবে।';
+
+  @override
+  String get ocrPdfNotUpdated =>
+      'খোঁজার জন্য লেখা সংরক্ষিত হয়েছে, কিন্তু পাসওয়ার্ড ছাড়া PDF আগের মতোই রইল।';
+
+  @override
+  String get enterPdfPasswordOcrBody =>
+      'এই PDF সুরক্ষিত। চেনা লেখা এতে যোগ করতে এর পাসওয়ার্ড দিন।';
 
   @override
   String get pageSize => 'পাতার আকার';

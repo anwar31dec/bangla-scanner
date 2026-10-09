@@ -65,7 +65,49 @@ void main() {
     await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 200)));
     await tester.pumpAndSettle();
     expect(find.text('Birth certificate'), findsNothing);
-    expect(find.text('No document found with this name.'), findsOneWidget);
+    expect(find.text('No document found with this name or text.'), findsOneWidget);
+    await unmountApp(tester);
+  });
+
+  testWidgets('search finds words inside a document and shows where', (tester) async {
+    final (app, db, _) = await buildTestApp(prefs: {'settings.language': 'en'});
+    addTearDown(db.close);
+    tester.view.physicalSize = const Size(800, 1200);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    await tester.runAsync(() async {
+      await _insert(db, 'a', 'Bank statement', DateTime(2026, 10, 1));
+      await _insert(db, 'b', 'Scan 01-10-2026', DateTime(2026, 10, 5));
+      await db.setPageTexts('b', [
+        PageTextsCompanion.insert(
+          documentId: 'b',
+          pageIndex: 1,
+          content: 'Electricity bill for September.\nAmount due: 1,250 Taka',
+          words: const Value('[["Electricity",0.1,0.1,0.4,0.13]]'),
+          language: OcrLanguage.english,
+        ),
+      ]);
+    });
+
+    await tester.pumpWidget(app);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('See all'));
+    await tester.pumpAndSettle();
+    // Only the recognized document is marked searchable.
+    expect(find.byIcon(Icons.text_snippet_outlined), findsOneWidget);
+
+    await tester.enterText(find.byType(TextField), 'amount due');
+    await tester.pumpAndSettle();
+    expect(find.text('Bank statement'), findsNothing);
+    expect(find.text('Scan 01-10-2026'), findsOneWidget);
+    expect(find.textContaining('In text: '), findsOneWidget);
+    expect(find.textContaining('Amount due: 1,250 Taka'), findsOneWidget);
+
+    // A hit on the name shows no excerpt.
+    await tester.enterText(find.byType(TextField), 'scan');
+    await tester.pumpAndSettle();
+    expect(find.text('Scan 01-10-2026'), findsOneWidget);
+    expect(find.textContaining('In text: '), findsNothing);
     await unmountApp(tester);
   });
 }

@@ -5,6 +5,8 @@ import 'package:banglascanner/core/models/enums.dart';
 import 'package:banglascanner/core/storage/app_database.dart';
 import 'package:banglascanner/core/storage/app_paths.dart';
 import 'package:banglascanner/features/export/data/export_service.dart';
+import 'package:banglascanner/features/export/data/pdf_builder.dart';
+import 'package:banglascanner/features/ocr/data/ocr_result.dart';
 import 'package:banglascanner/features/library/data/document_repository.dart';
 import 'package:banglascanner/features/scan/data/draft_document.dart';
 import 'package:drift/drift.dart' show driftRuntimeOptions;
@@ -12,7 +14,9 @@ import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart' as p;
 
+import '../export/pdf_text_layer_test.dart' show inflatedStreams;
 import '../helpers.dart';
+import '../ocr/fake_engine.dart';
 
 void main() {
   late Directory root;
@@ -27,8 +31,8 @@ void main() {
     root = await Directory.systemTemp.createTemp('bs_pages');
     paths = AppPaths(Directory(p.join(root.path, 'docs'))..createSync(), Directory(p.join(root.path, 'tmp'))..createSync());
     db = AppDatabase(NativeDatabase.memory());
-    repo = DocumentRepository(db, paths);
-    service = ExportService(repo, paths);
+    repo = DocumentRepository(db, paths, loadFont: () => File(TextLayerFont.asset).readAsBytes());
+    service = ExportService(repo, paths, ocrEngine: FakeOcrEngine(textFor: (i) => 'Page ${i + 1} text'));
   });
 
   tearDown(() async {
@@ -36,7 +40,7 @@ void main() {
     await root.delete(recursive: true);
   });
 
-  Future<DocumentRow> saved({String? password}) async {
+  Future<DocumentRow> saved({String? password, OcrLanguage? ocr}) async {
     final dir = Directory(p.join(root.path, 'work'))..createSync(recursive: true);
     final pages = <DraftPage>[];
     for (var i = 0; i < 3; i++) {
@@ -50,6 +54,7 @@ void main() {
       format: SaveFormat.pdf,
       quality: ExportQuality.low,
       password: password,
+      ocrLanguage: ocr,
     );
   }
 
@@ -84,6 +89,45 @@ void main() {
     final after = (await repo.get(doc.id))!;
     expect(after.isProtected, isTrue);
     expect(latin1.decode(repo.pdfOf(after).readAsBytesSync()), contains('/Encrypt'));
+  });
+
+  test('recognized text follows its page when pages are reordered or removed', () async {
+    final doc = await saved(ocr: OcrLanguage.english);
+    expect(doc.hasText, isTrue);
+    final pages = await repo.pagesOf(doc);
+    await repo.rewritePages(doc, [pages[2], pages[0]]);
+
+    final after = (await repo.get(doc.id))!;
+    expect(after.hasText, isTrue);
+    final texts = await repo.pageTextsOf(after);
+    expect(texts.map((t) => t?.text), ['Page 3 text', 'Page 1 text']);
+    expect(texts.map((t) => t?.words.single.text), ['Page', 'Page']);
+    expect((await db.pageTextsOf(doc.id)).map((r) => r.language), everyElement(OcrLanguage.english));
+    expect(RegExp(r'\b3 Tr\b').allMatches(inflatedStreams(repo.pdfOf(after).readAsBytesSync())).length, 2);
+    expect((await repo.watchAll(search: 'page 2').first), isEmpty);
+    expect((await repo.watchAll(search: 'page 3').first).map((d) => d.id), [doc.id]);
+  });
+
+  test('rebuildPdf adds the text layer to an existing PDF and keeps the file whole', () async {
+    final doc = await saved();
+    expect(inflatedStreams(repo.pdfOf(doc).readAsBytesSync()), isNot(contains('3 Tr')));
+    await repo.setPageTexts(doc.id, [
+      const PageText(text: 'hello world', words: [OcrWord('hello', left: 0.1, top: 0.1, right: 0.3, bottom: 0.15)]),
+      null,
+      const PageText(text: 'third'),
+    ], OcrLanguage.english);
+    expect((await repo.get(doc.id))!.hasText, isTrue);
+
+    await repo.rebuildPdf(doc);
+    final after = (await repo.get(doc.id))!;
+    expect(RegExp(r'\b3 Tr\b').allMatches(inflatedStreams(repo.pdfOf(after).readAsBytesSync())).length, 1);
+    expect(after.sizeBytes, repo.pdfOf(after).lengthSync());
+    expect(after.pageCount, 3);
+    expect(File('${repo.pdfOf(after).path}.tmp').existsSync(), isFalse);
+
+    // Clearing the text clears the flag.
+    await repo.setPageTexts(doc.id, const [], OcrLanguage.english);
+    expect((await repo.get(doc.id))!.hasText, isFalse);
   });
 
   test('refuses an empty page list', () async {

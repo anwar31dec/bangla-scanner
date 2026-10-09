@@ -7,6 +7,7 @@ import '../../../core/widgets/dialogs.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../../../core/widgets/progress_overlay.dart';
 import '../application/library_providers.dart';
+import '../data/document_repository.dart';
 import 'document_actions.dart';
 import 'document_tile.dart';
 
@@ -151,7 +152,9 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     final docs = ref.watch(libraryDocumentsProvider);
     final sort = ref.watch(librarySortProvider);
     final filter = ref.watch(libraryFilterProvider);
-    final searching = ref.watch(librarySearchProvider).trim().isNotEmpty;
+    final searchTerm = ref.watch(librarySearchProvider).trim();
+    final searching = searchTerm.isNotEmpty;
+    final textMatches = searching ? ref.watch(libraryTextMatchesProvider).value ?? const <String, String>{} : const <String, String>{};
     final theme = Theme.of(context);
 
     final visible = docs.value ?? const <DocumentRow>[];
@@ -255,9 +258,15 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                         itemBuilder: (context, i) {
                           final doc = list[i];
                           final order = _selected.indexOf(doc.id);
+                          // Say where a hit came from when the name alone does not explain it.
+                          final matchedText = textMatches[doc.id];
+                          final snippet = matchedText != null && !doc.name.toLowerCase().contains(searchTerm.toLowerCase())
+                              ? DocumentRepository.textSnippet(matchedText, searchTerm)
+                              : null;
                           return DocumentTile(
                             key: ValueKey(doc.id),
                             doc: doc,
+                            textMatch: snippet,
                             selecting: _selecting,
                             selectionOrder: order < 0 ? null : order + 1,
                             onToggle: _busy ? null : () => _toggle(doc.id),

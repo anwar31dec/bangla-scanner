@@ -7,7 +7,9 @@ import '../../../core/models/enums.dart';
 import '../../../core/permissions/permission_service.dart';
 import '../../../core/widgets/dialogs.dart';
 import '../../export/data/share_service.dart';
+import '../../export/presentation/save_sheet.dart';
 import '../../library/application/library_providers.dart';
+import '../../library/data/document_repository.dart';
 import '../../settings/application/settings_controller.dart';
 import '../application/ocr_controller.dart';
 
@@ -44,6 +46,43 @@ class _OcrScreenState extends ConsumerState<OcrScreen> {
 
   String _docName() => ref.read(documentProvider(widget.documentId)).value?.name ?? 'Text';
 
+  /// Stores the recognized text with the document, so the library search
+  /// finds it, and rebuilds a PDF with an invisible text layer so it is
+  /// searchable in any viewer. A protected PDF needs its password; without
+  /// it only the search text is kept.
+  Future<void> _attachToDocument(OcrState state) async {
+    final l10n = context.l10n;
+    final language = state.language;
+    if (language == null || !state.pages.any((pg) => !pg.isEmpty)) return;
+    final doc = ref.read(documentProvider(widget.documentId)).value;
+    if (doc == null) return;
+    try {
+      final repo = await ref.read(documentRepositoryProvider.future);
+      await repo.setPageTexts(doc.id, state.pages, language);
+      if (!mounted) return;
+      if (doc.format == SaveFormat.pdf && state.pages.any((pg) => pg.words.isNotEmpty)) {
+        String? password;
+        if (doc.isProtected) {
+          password = await showPasswordDialog(
+            context,
+            title: l10n.enterPdfPassword,
+            body: l10n.enterPdfPasswordOcrBody,
+            minLength: minPdfPasswordLength,
+          );
+          if (!mounted) return;
+          if (password == null) {
+            showSnack(context, l10n.ocrPdfNotUpdated);
+            return;
+          }
+        }
+        await repo.rebuildPdf(doc, password: password);
+      }
+      if (mounted) showSnack(context, l10n.ocrTextSaved);
+    } catch (e) {
+      if (mounted) showError(context, e);
+    }
+  }
+
   Future<void> _copy() async {
     await Clipboard.setData(ClipboardData(text: _text.text));
     if (mounted) showSnack(context, context.l10n.copied);
@@ -79,9 +118,13 @@ class _OcrScreenState extends ConsumerState<OcrScreen> {
     final l10n = context.l10n;
     final state = ref.watch(ocrControllerProvider);
 
-    // Fill the editor once when recognition finishes.
+    // Fill the editor once when recognition finishes, and keep the result
+    // with the document.
     ref.listen(ocrControllerProvider, (prev, next) {
-      if (next.stage == OcrStage.done && prev?.stage != OcrStage.done) _text.text = next.text;
+      if (next.stage == OcrStage.done && prev?.stage != OcrStage.done) {
+        _text.text = next.text;
+        _attachToDocument(next);
+      }
     });
 
     final showResult = state.stage == OcrStage.done && state.text.isNotEmpty;

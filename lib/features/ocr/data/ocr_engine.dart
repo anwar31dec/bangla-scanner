@@ -5,11 +5,13 @@ import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart
 
 import '../../../core/models/enums.dart';
 import '../../../core/storage/storage_providers.dart';
+import 'ocr_result.dart';
 import 'tessdata_installer.dart';
 
-/// Recognizes text in one (already pre-processed) image file.
+/// Recognizes text in one (already pre-processed) image file, returning the
+/// text and the box of every word in pixels of that image.
 abstract class OcrEngine {
-  Future<String> recognize(String imagePath, OcrLanguage language);
+  Future<RecognizedPage> recognize(String imagePath, OcrLanguage language);
 }
 
 /// Offline OCR:
@@ -27,12 +29,26 @@ class DefaultOcrEngine implements OcrEngine {
   static String tesseractLanguage(OcrLanguage language) => language == OcrLanguage.both ? 'ben+eng' : 'ben';
 
   @override
-  Future<String> recognize(String imagePath, OcrLanguage language) async {
+  Future<RecognizedPage> recognize(String imagePath, OcrLanguage language) async {
     if (language == OcrLanguage.english) {
       final recognizer = TextRecognizer(script: TextRecognitionScript.latin);
       try {
         final result = await recognizer.processImage(InputImage.fromFilePath(imagePath));
-        return result.text;
+        return RecognizedPage(
+          text: result.text,
+          words: [
+            for (final block in result.blocks)
+              for (final line in block.lines)
+                for (final element in line.elements)
+                  OcrWord(
+                    element.text,
+                    left: element.boundingBox.left,
+                    top: element.boundingBox.top,
+                    right: element.boundingBox.right,
+                    bottom: element.boundingBox.bottom,
+                  ),
+          ],
+        );
       } finally {
         await recognizer.close();
       }
@@ -42,7 +58,8 @@ class DefaultOcrEngine implements OcrEngine {
     // flutter_tesseract_ocr checks every model listed in
     // assets/tessdata_config.json, so install both even for "ben" only.
     await _installer.ensure('ben+eng');
-    return FlutterTesseractOcr.extractText(
+    // hOCR carries the text and the word boxes in one recognition pass.
+    final hocr = await FlutterTesseractOcr.extractHocr(
       imagePath,
       language: lang,
       args: {
@@ -52,6 +69,7 @@ class DefaultOcrEngine implements OcrEngine {
         'preserve_interword_spaces': '1',
       },
     );
+    return HocrParser.parse(hocr);
   }
 }
 

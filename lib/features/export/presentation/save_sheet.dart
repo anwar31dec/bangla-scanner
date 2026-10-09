@@ -13,6 +13,7 @@ class SaveOptions {
     required this.quality,
     this.pageSize = PdfPageSize.auto,
     this.password,
+    this.ocrLanguage,
   });
 
   final String name;
@@ -24,6 +25,10 @@ class SaveOptions {
 
   /// PDF only; null or empty = not protected.
   final String? password;
+
+  /// PDF only; when set, the text is recognized while saving (searchable
+  /// PDF). Null = no OCR.
+  final OcrLanguage? ocrLanguage;
 }
 
 /// Shortest password accepted for a protected PDF.
@@ -66,6 +71,8 @@ class _SaveSheetState extends ConsumerState<_SaveSheet> {
   late SaveFormat _format;
   late ExportQuality _quality;
   late PdfPageSize _pageSize;
+  late bool _searchable;
+  late OcrLanguage _ocrLanguage;
   late bool _protect = widget.initialProtected;
   bool _showPassword = false;
   String? _error;
@@ -78,6 +85,8 @@ class _SaveSheetState extends ConsumerState<_SaveSheet> {
     _format = widget.initialFormat ?? settings.defaultFormat;
     _quality = settings.defaultQuality;
     _pageSize = settings.defaultPageSize;
+    _searchable = settings.searchablePdf;
+    _ocrLanguage = settings.defaultOcrLanguage;
   }
 
   @override
@@ -105,6 +114,7 @@ class _SaveSheetState extends ConsumerState<_SaveSheet> {
         quality: _quality,
         pageSize: _format == SaveFormat.pdf ? _pageSize : PdfPageSize.auto,
         password: protect ? password : null,
+        ocrLanguage: _format == SaveFormat.pdf && _searchable ? _ocrLanguage : null,
       ),
     );
   }
@@ -174,6 +184,25 @@ class _SaveSheetState extends ConsumerState<_SaveSheet> {
               const SizedBox(height: 6),
               Text(l10n.pageSizeHint, style: theme.textTheme.bodySmall),
               const SizedBox(height: 12),
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                secondary: const Icon(Icons.manage_search),
+                title: Text(l10n.searchablePdf),
+                value: _searchable,
+                onChanged: (v) => setState(() => _searchable = v),
+              ),
+              if (_searchable) ...[
+                SegmentedButton<OcrLanguage>(
+                  showSelectedIcon: false,
+                  segments: [
+                    for (final lang in OcrLanguage.values) ButtonSegment(value: lang, label: Text(l10n.ocrLanguageLabel(lang))),
+                  ],
+                  selected: {_ocrLanguage},
+                  onSelectionChanged: (s) => setState(() => _ocrLanguage = s.first),
+                ),
+                const SizedBox(height: 6),
+                Text(l10n.searchablePdfHint, style: theme.textTheme.bodySmall),
+              ],
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
                 secondary: const Icon(Icons.lock_outline),

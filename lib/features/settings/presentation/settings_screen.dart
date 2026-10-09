@@ -136,6 +136,20 @@ class SettingsScreen extends ConsumerWidget {
             ),
           ),
           _Section(
+            icon: Icons.manage_search,
+            title: l10n.settingsSearchablePdf,
+            child: Card(
+              margin: EdgeInsets.zero,
+              child: SwitchListTile(
+                secondary: const Icon(Icons.text_snippet_outlined),
+                title: Text(l10n.searchablePdf),
+                subtitle: Text(l10n.settingsSearchablePdfHint),
+                value: settings.searchablePdf,
+                onChanged: controller.setSearchablePdf,
+              ),
+            ),
+          ),
+          _Section(
             icon: Icons.lock_outline,
             title: l10n.settingsAppLock,
             child: Card(

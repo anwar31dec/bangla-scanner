@@ -112,6 +112,10 @@ class _IdCardScreenState extends ConsumerState<IdCardScreen> {
         quality: options.quality,
         pageSize: options.pageSize,
         password: options.password,
+        ocrLanguage: options.ocrLanguage,
+        onOcrProgress: (done, total) {
+          if (mounted) setState(() => _progressText = done < total ? l10n.ocrRecognizing(done + 1, total) : l10n.saving);
+        },
       );
       await ref.read(scannerServiceProvider).cleanCache();
       if (!mounted) return;

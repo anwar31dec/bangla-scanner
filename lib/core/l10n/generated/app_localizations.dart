@@ -635,7 +635,7 @@ abstract class AppLocalizations {
   /// No description provided for @searchHint.
   ///
   /// In en, this message translates to:
-  /// **'Search by name'**
+  /// **'Search by name or text'**
   String get searchHint;
 
   /// No description provided for @sortBy.
@@ -677,7 +677,7 @@ abstract class AppLocalizations {
   /// No description provided for @librarySearchEmpty.
   ///
   /// In en, this message translates to:
-  /// **'No document found with this name.'**
+  /// **'No document found with this name or text.'**
   String get librarySearchEmpty;
 
   /// No description provided for @rename.
@@ -1243,6 +1243,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Password protected'**
   String get protectedBadge;
+
+  /// No description provided for @searchableBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'Searchable (text recognized)'**
+  String get searchableBadge;
+
+  /// No description provided for @textMatch.
+  ///
+  /// In en, this message translates to:
+  /// **'In text: {snippet}'**
+  String textMatch(String snippet);
+
+  /// No description provided for @searchablePdf.
+  ///
+  /// In en, this message translates to:
+  /// **'Searchable PDF (recognize text)'**
+  String get searchablePdf;
+
+  /// No description provided for @searchablePdfHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Reads the text while saving, so you can search inside the PDF in any viewer and find the document by its words in the library. Takes longer.'**
+  String get searchablePdfHint;
+
+  /// No description provided for @settingsSearchablePdf.
+  ///
+  /// In en, this message translates to:
+  /// **'Make PDFs searchable'**
+  String get settingsSearchablePdf;
+
+  /// No description provided for @settingsSearchablePdfHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Recognize the text whenever a PDF is saved (can be changed per document).'**
+  String get settingsSearchablePdfHint;
+
+  /// No description provided for @ocrTextSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Text saved. The document can now be found by its words.'**
+  String get ocrTextSaved;
+
+  /// No description provided for @ocrPdfNotUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Text saved for search, but the PDF was left as it is without its password.'**
+  String get ocrPdfNotUpdated;
+
+  /// No description provided for @enterPdfPasswordOcrBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This PDF is protected. Enter its password to add the recognized text to it.'**
+  String get enterPdfPasswordOcrBody;
 
   /// No description provided for @pageSize.
   ///

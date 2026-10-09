@@ -14,13 +14,15 @@ import '../../../core/storage/storage_providers.dart';
 import '../../../core/utils/app_exception.dart';
 import '../../export/data/image_processing.dart';
 import '../../export/data/pdf_builder.dart';
+import '../../ocr/data/ocr_result.dart';
 
 /// Access to saved documents: metadata in drift, files on disk.
 class DocumentRepository {
-  DocumentRepository(this._db, this._paths);
+  DocumentRepository(this._db, this._paths, {this._loadFont = TextLayerFont.load});
 
   final AppDatabase _db;
   final AppPaths _paths;
+  final TextLayerFontLoader _loadFont;
 
   static const pagesFolder = 'pages';
   static const pdfFileName = 'document.pdf';
@@ -36,6 +38,22 @@ class DocumentRepository {
       _db.watchDocuments(search: search, sort: sort, filter: filter, limit: limit);
 
   Stream<DocumentRow?> watch(String id) => _db.watchDocument(id);
+
+  /// Documents whose recognized text contains [term], with the text of the
+  /// first matching page (see [textSnippet]).
+  Stream<Map<String, String>> watchTextMatches(String term) => _db.watchTextMatches(term);
+
+  /// A short, single-line excerpt of [text] around the first occurrence of
+  /// [term] (case-insensitive), with an ellipsis on the cut sides.
+  static String textSnippet(String text, String term, {int radius = 32}) {
+    final flat = text.replaceAll(RegExp(r'\s+'), ' ').trim();
+    final t = term.trim();
+    final at = t.isEmpty ? -1 : flat.toLowerCase().indexOf(t.toLowerCase());
+    if (at < 0) return flat.length <= 2 * radius ? flat : '${flat.substring(0, 2 * radius)}…';
+    final start = (at - radius).clamp(0, flat.length);
+    final end = (at + t.length + radius).clamp(0, flat.length);
+    return '${start > 0 ? '…' : ''}${flat.substring(start, end)}${end < flat.length ? '…' : ''}';
+  }
 
   Future<DocumentRow?> get(String id) => _db.getDocument(id);
 
@@ -89,10 +107,107 @@ class DocumentRepository {
 
   Future<void> upsert(DocumentsCompanion row) => _db.upsertDocument(row);
 
+  // Recognized text ---------------------------------------------------------
+
+  /// Recognized text per page (null for pages without any), as long as the
+  /// document has pages.
+  Future<List<PageText?>> pageTextsOf(DocumentRow doc) async {
+    final rows = await _db.pageTextsOf(doc.id);
+    final out = List<PageText?>.filled(doc.pageCount, null);
+    for (final r in rows) {
+      if (r.pageIndex >= 0 && r.pageIndex < out.length) {
+        out[r.pageIndex] = PageText(text: r.content, words: PageText.wordsFromJson(r.words));
+      }
+    }
+    return out;
+  }
+
+  /// Stores the recognized [pages] (in page order) of [doc], replacing any
+  /// earlier text. An empty list clears it.
+  Future<void> setPageTexts(String documentId, List<PageText?> pages, OcrLanguage language) => _db.setPageTexts(
+        documentId,
+        [
+          for (var i = 0; i < pages.length; i++)
+            if (pages[i] case final page? when !page.isEmpty || page.words.isNotEmpty)
+              PageTextsCompanion.insert(
+                documentId: documentId,
+                pageIndex: i,
+                content: page.text,
+                words: Value(page.wordsJson),
+                language: language,
+              ),
+        ],
+      );
+
+  /// Builds the PDF bytes for [pages], with an invisible text layer when
+  /// any of [texts] has word positions.
+  Future<Uint8List> buildPdf(
+    List<Uint8List> pages, {
+    required String title,
+    String? password,
+    List<PageText?>? texts,
+    PdfPageSize pageSize = PdfPageSize.auto,
+  }) async {
+    final hasWords = texts?.any((t) => t != null && t.words.isNotEmpty) ?? false;
+    final font = hasWords ? await _loadFont() : null;
+    return Isolate.run(
+      () => PdfBuilder.build(pages, title: title, pageSize: pageSize, password: password, texts: texts, fontData: font),
+    );
+  }
+
+  /// Rebuilds the PDF of [doc] from its page images and stored text, so a
+  /// freshly recognized document becomes searchable in any PDF viewer. A
+  /// protected PDF needs its [password] again. JPEG documents are left
+  /// alone.
+  Future<void> rebuildPdf(DocumentRow doc, {String? password}) async {
+    if (doc.format != SaveFormat.pdf) return;
+    final pages = await pagesOf(doc);
+    if (pages.isEmpty) throw const AppException(AppErrorKind.missingFile);
+    final bytes = [for (final f in pages) await f.readAsBytes()];
+    final texts = await pageTextsOf(doc);
+    final protect = password != null && password.isNotEmpty;
+    final pdf = await buildPdf(bytes, title: doc.name, password: protect ? password : null, texts: texts);
+    final target = pdfOf(doc);
+    // Write next to the file and rename, so a crash never leaves half a PDF.
+    final tmp = File('${target.path}.tmp');
+    try {
+      await tmp.writeAsBytes(pdf, flush: true);
+      await tmp.rename(target.path);
+    } catch (e) {
+      try {
+        if (await tmp.exists()) await tmp.delete();
+      } catch (_) {}
+      throw AppException.from(e);
+    }
+    await _db.upsertDocument(
+      DocumentsCompanion(
+        id: Value(doc.id),
+        name: Value(doc.name),
+        format: Value(doc.format),
+        dirPath: Value(doc.dirPath),
+        pageCount: Value(doc.pageCount),
+        sizeBytes: Value(pdf.length),
+        createdAt: Value(doc.createdAt),
+        updatedAt: Value(DateTime.now()),
+        isFavorite: Value(doc.isFavorite),
+        folderId: Value(doc.folderId),
+        isProtected: Value(protect),
+        hasText: Value(doc.hasText),
+      ),
+    );
+  }
+
+  /// 0-based page number of a `page_NNN.jpg` file, or null.
+  static int? pageIndexOf(File page) {
+    final m = RegExp(r'^page_(\d+)\.jpg$').firstMatch(p.basename(page.path));
+    return m == null ? null : int.parse(m.group(1)!) - 1;
+  }
+
   /// Rewrites the document with its pages in the order of [keptPages]
   /// (a subset of [pagesOf], reordered; left-out pages are removed). The
-  /// JPEGs are moved, not re-encoded, so nothing loses quality. A PDF is
-  /// rebuilt; a protected one needs its [password] again.
+  /// JPEGs are moved, not re-encoded, so nothing loses quality, and the
+  /// recognized text follows its page. A PDF is rebuilt; a protected one
+  /// needs its [password] again.
   Future<void> rewritePages(DocumentRow doc, List<File> keptPages, {String? password}) async {
     if (keptPages.isEmpty) throw const AppException(AppErrorKind.generic, 'No pages');
     final dir = dirOf(doc);
@@ -102,11 +217,17 @@ class DocumentRepository {
       final pagesDir = Directory(p.join(staging.path, pagesFolder));
       await pagesDir.create(recursive: true);
 
+      final oldTexts = await pageTextsOf(doc);
+      final oldRows = await _db.pageTextsOf(doc.id);
+      final language = oldRows.isEmpty ? OcrLanguage.bangla : oldRows.first.language;
+      final texts = <PageText?>[];
       final bytes = <Uint8List>[];
       for (var i = 0; i < keptPages.length; i++) {
         final name = 'page_${(i + 1).toString().padLeft(3, '0')}.jpg';
         final copy = await keptPages[i].copy(p.join(pagesDir.path, name));
         bytes.add(await copy.readAsBytes());
+        final oldIndex = pageIndexOf(keptPages[i]);
+        texts.add(oldIndex != null && oldIndex < oldTexts.length ? oldTexts[oldIndex] : null);
       }
       final first = bytes.first;
       final thumb = await Isolate.run(() => ImageProcessing.thumbnail(first));
@@ -115,8 +236,7 @@ class DocumentRepository {
       final protect = doc.format == SaveFormat.pdf && password != null && password.isNotEmpty;
       int sizeBytes;
       if (doc.format == SaveFormat.pdf) {
-        final title = doc.name;
-        final pdf = await Isolate.run(() => PdfBuilder.build(bytes, title: title, password: protect ? password : null));
+        final pdf = await buildPdf(bytes, title: doc.name, password: protect ? password : null, texts: texts);
         await File(p.join(staging.path, pdfFileName)).writeAsBytes(pdf, flush: true);
         sizeBytes = pdf.length;
       } else {
@@ -138,8 +258,10 @@ class DocumentRepository {
           isFavorite: Value(doc.isFavorite),
           folderId: Value(doc.folderId),
           isProtected: Value(protect),
+          hasText: Value(doc.hasText),
         ),
       );
+      await setPageTexts(doc.id, texts, language);
     } catch (e) {
       try {
         if (await staging.exists()) await staging.delete(recursive: true);

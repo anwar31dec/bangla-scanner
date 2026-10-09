@@ -86,6 +86,7 @@ void main() {
       updatedAt: now,
       isFavorite: false,
       isProtected: false,
+      hasText: false,
     );
     await controller().startFromDocument(doc, sources.take(2).toList());
     expect(container.read(draftProvider)!.pages.map((pg) => pg.filter), everyElement(PageFilter.original));

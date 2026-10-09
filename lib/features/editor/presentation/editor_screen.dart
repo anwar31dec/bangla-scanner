@@ -120,11 +120,19 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
         quality: options.quality,
         pageSize: options.pageSize,
         password: options.password,
+        ocrLanguage: options.ocrLanguage,
         onProgress: (done, total) {
           if (!mounted) return;
           setState(() {
             _progress = done / total;
             _progressText = done < total ? l10n.savingProgress(done + 1, total) : l10n.saving;
+          });
+        },
+        onOcrProgress: (done, total) {
+          if (!mounted) return;
+          setState(() {
+            _progress = done / total;
+            _progressText = done < total ? l10n.ocrRecognizing(done + 1, total) : l10n.saving;
           });
         },
       );

@@ -21,6 +21,7 @@ class SettingsRepository {
   static const _kQuality = 'settings.quality';
   static const _kPageSize = 'settings.pageSize';
   static const _kOcr = 'settings.ocrLanguage';
+  static const _kSearchablePdf = 'settings.searchablePdf';
   static const _kLockEnabled = 'settings.lock.enabled';
   static const _kLockBiometric = 'settings.lock.biometric';
   static const _kLockDelay = 'settings.lock.delay';
@@ -37,6 +38,7 @@ class SettingsRepository {
       defaultQuality: _byName(ExportQuality.values, _prefs.getString(_kQuality), defaults.defaultQuality),
       defaultPageSize: _byName(PdfPageSize.values, _prefs.getString(_kPageSize), defaults.defaultPageSize),
       defaultOcrLanguage: _byName(OcrLanguage.values, _prefs.getString(_kOcr), defaults.defaultOcrLanguage),
+      searchablePdf: _prefs.getBool(_kSearchablePdf) ?? defaults.searchablePdf,
       // A lock without a PIN would lock the user out for good.
       appLockEnabled: (_prefs.getBool(_kLockEnabled) ?? false) && hasPin,
       biometricUnlock: _prefs.getBool(_kLockBiometric) ?? false,
@@ -52,6 +54,7 @@ class SettingsRepository {
       _prefs.setString(_kQuality, s.defaultQuality.name),
       _prefs.setString(_kPageSize, s.defaultPageSize.name),
       _prefs.setString(_kOcr, s.defaultOcrLanguage.name),
+      _prefs.setBool(_kSearchablePdf, s.searchablePdf),
       _prefs.setBool(_kLockEnabled, s.appLockEnabled),
       _prefs.setBool(_kLockBiometric, s.biometricUnlock),
       _prefs.setString(_kLockDelay, s.lockDelay.name),

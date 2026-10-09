@@ -26,9 +26,14 @@ class DocumentTile extends ConsumerWidget {
     this.selectionOrder,
     this.onToggle,
     this.onLongPress,
+    this.textMatch,
   });
 
   final DocumentRow doc;
+
+  /// Excerpt of the recognized text that matched the library search, shown
+  /// under the document's details.
+  final String? textMatch;
 
   /// True while the list is in multi-select mode.
   final bool selecting;
@@ -117,6 +122,10 @@ class DocumentTile extends ConsumerWidget {
                           Icon(Icons.lock_outline, size: 14, color: theme.colorScheme.primary, semanticLabel: l10n.protectedBadge),
                           const SizedBox(width: 4),
                         ],
+                        if (doc.hasText) ...[
+                          Icon(Icons.text_snippet_outlined, size: 14, color: theme.colorScheme.primary, semanticLabel: l10n.searchableBadge),
+                          const SizedBox(width: 4),
+                        ],
                         Flexible(
                           child: Text(
                             '${l10n.editorPages(doc.pageCount)} · ${Formatters.fileSize(doc.sizeBytes, locale)}',
@@ -127,6 +136,16 @@ class DocumentTile extends ConsumerWidget {
                       ],
                     ),
                     Text(Formatters.date(doc.createdAt, locale), style: theme.textTheme.bodySmall),
+                    if (textMatch case final snippet?)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4),
+                        child: Text(
+                          l10n.textMatch(snippet),
+                          style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant, fontStyle: FontStyle.italic),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
                   ],
                 ),
               ),

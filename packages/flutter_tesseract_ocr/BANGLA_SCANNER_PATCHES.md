@@ -14,3 +14,9 @@ current Flutter toolchain:
   Dart side) instead of symlinking into the read-only app bundle; always
   completes the method call (errors included); uses the SwiftyTesseract 3 API.
 - Removed the web implementation, example app and demo assets.
+- iOS plugin: implements `extractHocr` (the Dart API already had it; only
+  Android answered). It runs `performOCR` and then SwiftyTesseract's
+  `recognizedBlocks(for:)` at line and word level, and writes a minimal hOCR
+  document (`ocr_line` / `ocrx_word` spans with `bbox` in image pixels) in
+  the same shape as Tesseract's own output on Android, so the Dart parser
+  (`HocrParser`) is shared.

@@ -24,7 +24,8 @@ without an internet connection.
 | Library | Thumbnail, name, pages, date, size; search, sort, rename, delete; **folders** (chips row, long-press a folder to rename/delete), **favourites**; multi-select to share, move, star, delete or merge several documents; metadata in drift |
 | Document viewer | Swipe pages, pinch and double-tap to zoom (paging pauses while zoomed), thumbnail strip; **reorder or remove pages** of a saved document without re-processing (JPEGs are moved, the PDF is rebuilt) |
 | Share / save copy | `share_plus`; Downloads/Bangla Scanner on Android, Files picker on iOS |
-| OCR | Bangla: Tesseract `ben`; English: ML Kit; Both: Tesseract `ben+eng`; editable result, copy/share/.txt |
+| OCR | Bangla: Tesseract `ben`; English: ML Kit; Both: Tesseract `ben+eng`; editable result, copy/share/.txt. The recognized text (with the position of every word) is kept with the document: the library search then finds documents by the words inside them (with an excerpt of the hit), and a PDF is rebuilt with an **invisible text layer** so it is searchable, and its text selectable, in any PDF viewer |
+| Searchable PDF | Save sheet switch (default in Settings): the text is recognized while saving and drawn invisibly over each page (Hind Siliguri subset embedded for Bangla + Latin), and stored for the library search. Text follows its page when pages are reordered or removed; re-saving an edited document drops it (pages changed) |
 | ID card mode | Document type: NID / smart card (ID-1, 85.6 × 53.98 mm, front and back) or passport (ID-3, 125 × 88 mm, photo page plus an optional second page), placed on one A4 page at real size |
 | App lock | PIN (4–8 digits, stored as a salted hash) with optional fingerprint / face unlock (`local_auth`); locks on launch and after 0 / 1 / 5 minutes in the background |
 | Backup & restore | Settings → Backup: the whole library (documents, folders, favourites) as one `.zip` to Downloads / Files or the share sheet; restore adds everything the library does not have yet (see below) |
@@ -80,8 +81,9 @@ flutter test
 ```
 
 The drift code (`lib/core/storage/app_database.g.dart`) is committed. The
-schema is at version 2 (folders, favourites and the protected flag were added
-with a migration in `AppDatabase.migration`). After changing the database
+schema is at version 3 (v2 added folders, favourites and the protected flag;
+v3 added the `page_texts` table of recognized text + word boxes and the
+`has_text` flag, see `AppDatabase.migration`). After changing the database
 schema, bump `schemaVersion`, add a migration step and regenerate:
 
 ```bash

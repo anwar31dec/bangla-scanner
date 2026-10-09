@@ -1,4 +1,5 @@
 import '../../../core/models/enums.dart';
+import '../../ocr/data/ocr_result.dart';
 
 /// What a backup zip says about itself (`manifest.json` at the zip root).
 ///
@@ -94,6 +95,7 @@ class BackupDocument {
     required this.isFavorite,
     required this.folderId,
     required this.isProtected,
+    this.texts = const [],
   });
 
   final String id;
@@ -106,6 +108,9 @@ class BackupDocument {
   final bool isFavorite;
   final String? folderId;
   final bool isProtected;
+
+  /// Recognized text of the pages, if any (see [BackupPageText]).
+  final List<BackupPageText> texts;
 
   /// Where the document's files are inside the zip.
   String get zipFolder => '${BackupManifest.libraryFolder}/$id';
@@ -121,12 +126,14 @@ class BackupDocument {
     'isFavorite': isFavorite,
     'folderId': folderId,
     'isProtected': isProtected,
+    if (texts.isNotEmpty) 'texts': [for (final t in texts) t.toJson()],
   };
 
   factory BackupDocument.fromJson(Map<String, Object?> json) {
     final id = _requireString(json, 'id');
     // Ids become folder names on disk; keep them boring.
     if (!RegExp(r'^[A-Za-z0-9_-]{1,64}$').hasMatch(id)) throw FormatException('Bad document id $id');
+    final texts = json['texts'];
     return BackupDocument(
       id: id,
       name: _requireString(json, 'name'),
@@ -138,6 +145,45 @@ class BackupDocument {
       isFavorite: json['isFavorite'] == true,
       folderId: json['folderId'] as String?,
       isProtected: json['isProtected'] == true,
+      texts: [
+        if (texts is List)
+          for (final t in texts)
+            if (t is Map<String, Object?>) ?BackupPageText.fromJson(t),
+      ],
+    );
+  }
+}
+
+/// OCR text of one page, as stored in `page_texts`.
+class BackupPageText {
+  const BackupPageText({required this.pageIndex, required this.text, required this.language});
+
+  /// 0-based.
+  final int pageIndex;
+  final PageText text;
+  final OcrLanguage language;
+
+  Map<String, Object?> toJson() => {
+    'page': pageIndex,
+    'text': text.text,
+    'words': [for (final w in text.words) w.toJson()],
+    'language': language.name,
+  };
+
+  static BackupPageText? fromJson(Map<String, Object?> json) {
+    final page = json['page'], text = json['text'];
+    if (page is! num || text is! String) return null;
+    final words = json['words'];
+    return BackupPageText(
+      pageIndex: page.toInt(),
+      text: PageText(
+        text: text,
+        words: [
+          if (words is List)
+            for (final w in words) ?OcrWord.fromJson(w),
+        ],
+      ),
+      language: OcrLanguage.values.firstWhere((l) => l.name == json['language'], orElse: () => OcrLanguage.bangla),
     );
   }
 }

@@ -20,7 +20,11 @@ class OcrPreprocessor {
   static const minEdge = 1800;
   static const maxEdge = 2600;
 
-  static Uint8List process(Uint8List bytes) {
+  static Uint8List process(Uint8List bytes) => prepare(bytes).bytes;
+
+  /// Like [process], and also reports the size of the prepared image, which
+  /// the word boxes an engine returns are measured in.
+  static PreparedImage prepare(Uint8List bytes) {
     var image = ImageProcessing.decode(bytes);
 
     final longest = math.max(image.width, image.height);
@@ -40,6 +44,15 @@ class OcrPreprocessor {
     image = img.contrast(image, contrast: 135);
 
     // PNG keeps text edges sharp (no JPEG artefacts). Level 1 = fast.
-    return img.encodePng(image, level: 1);
+    return PreparedImage(img.encodePng(image, level: 1), image.width, image.height);
   }
+}
+
+/// A page image ready for OCR and its pixel size.
+class PreparedImage {
+  const PreparedImage(this.bytes, this.width, this.height);
+
+  final Uint8List bytes;
+  final int width;
+  final int height;
 }

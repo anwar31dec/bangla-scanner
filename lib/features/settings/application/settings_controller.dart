@@ -33,6 +33,7 @@ class SettingsController extends Notifier<AppSettings> {
   Future<void> setDefaultQuality(ExportQuality q) => _update(state.copyWith(defaultQuality: q));
   Future<void> setDefaultPageSize(PdfPageSize s) => _update(state.copyWith(defaultPageSize: s));
   Future<void> setDefaultOcrLanguage(OcrLanguage l) => _update(state.copyWith(defaultOcrLanguage: l));
+  Future<void> setSearchablePdf(bool on) => _update(state.copyWith(searchablePdf: on));
   Future<void> setBiometricUnlock(bool on) => _update(state.copyWith(biometricUnlock: on));
   Future<void> setLockDelay(LockDelay d) => _update(state.copyWith(lockDelay: d));
 

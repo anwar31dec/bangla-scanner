@@ -32,8 +32,31 @@ class Documents extends Table {
   /// is never stored.
   BoolColumn get isProtected => boolean().withDefault(const Constant(false))();
 
+  /// True when OCR text is stored for the document (see [PageTexts]), so the
+  /// library search looks inside it and a PDF carries a text layer.
+  BoolColumn get hasText => boolean().withDefault(const Constant(false))();
+
   @override
   Set<Column> get primaryKey => {id};
+}
+
+/// Recognized text of one page of a document, with the position of every
+/// word (see `PageText`). Powers the library's full-text search and the
+/// invisible text layer of searchable PDFs.
+@DataClassName('PageTextRow')
+class PageTexts extends Table {
+  TextColumn get documentId => text()();
+
+  /// 0-based page number.
+  IntColumn get pageIndex => integer()();
+  TextColumn get content => text()();
+
+  /// JSON list of `[word, left, top, right, bottom]` (fractions of the page).
+  TextColumn get words => text().withDefault(const Constant('[]'))();
+  TextColumn get language => textEnum<OcrLanguage>()();
+
+  @override
+  Set<Column> get primaryKey => {documentId, pageIndex};
 }
 
 /// User-created folders of the library.
@@ -84,12 +107,12 @@ class FolderFilter extends LibraryFilter {
   int get hashCode => folderId.hashCode;
 }
 
-@DriftDatabase(tables: [Documents, Folders])
+@DriftDatabase(tables: [Documents, Folders, PageTexts])
 class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? driftDatabase(name: 'bangla_scanner'));
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -101,11 +124,22 @@ class AppDatabase extends _$AppDatabase {
             await m.addColumn(documents, documents.isProtected);
             await m.createTable(folders);
           }
+          if (from < 3) {
+            await m.addColumn(documents, documents.hasText);
+            await m.createTable(pageTexts);
+          }
         },
       );
 
+  /// `%term%` for a LIKE on lower-cased text, with the wildcards escaped.
+  static String _likePattern(String term) {
+    final escaped = term.replaceAll(r'\', r'\\').replaceAll('%', r'\%').replaceAll('_', r'\_');
+    return '%${escaped.toLowerCase()}%';
+  }
+
   /// Live list of documents, optionally filtered by [search] (case
-  /// insensitive, matches anywhere in the name) and [filter].
+  /// insensitive, matches anywhere in the name or in the recognized text
+  /// of a page) and [filter].
   Stream<List<DocumentRow>> watchDocuments({
     String search = '',
     DocumentSort sort = DocumentSort.newest,
@@ -115,8 +149,15 @@ class AppDatabase extends _$AppDatabase {
     final query = select(documents);
     final term = search.trim();
     if (term.isNotEmpty) {
-      final escaped = term.replaceAll(r'\', r'\\').replaceAll('%', r'\%').replaceAll('_', r'\_');
-      query.where((d) => d.name.lower().like('%${escaped.toLowerCase()}%', escapeChar: r'\'));
+      final pattern = _likePattern(term);
+      query.where(
+        (d) =>
+            d.name.lower().like(pattern, escapeChar: r'\') |
+            existsQuery(
+              select(pageTexts)
+                ..where((t) => t.documentId.equalsExp(d.id) & t.content.lower().like(pattern, escapeChar: r'\')),
+            ),
+      );
     }
     switch (filter) {
       case _AllFilter():
@@ -166,7 +207,46 @@ class AppDatabase extends _$AppDatabase {
   Future<void> moveToFolder(List<String> ids, String? folderId) =>
       (update(documents)..where((d) => d.id.isIn(ids))).write(DocumentsCompanion(folderId: Value(folderId)));
 
-  Future<void> deleteDocument(String id) => (delete(documents)..where((d) => d.id.equals(id))).go();
+  Future<void> deleteDocument(String id) => transaction(() async {
+        await (delete(pageTexts)..where((t) => t.documentId.equals(id))).go();
+        await (delete(documents)..where((d) => d.id.equals(id))).go();
+      });
+
+  // Page texts ---------------------------------------------------------------
+
+  /// Recognized text of every page of document [id], in page order.
+  Future<List<PageTextRow>> pageTextsOf(String id) =>
+      (select(pageTexts)
+            ..where((t) => t.documentId.equals(id))
+            ..orderBy([(t) => OrderingTerm.asc(t.pageIndex)]))
+          .get();
+
+  /// Replaces the recognized text of document [id] with [rows] (which may
+  /// be empty to clear it) and keeps the document's `hasText` flag in step.
+  Future<void> setPageTexts(String id, List<PageTextsCompanion> rows) => transaction(() async {
+        await (delete(pageTexts)..where((t) => t.documentId.equals(id))).go();
+        await batch((b) => b.insertAll(pageTexts, rows));
+        final hasText = rows.any((r) => r.content.present && r.content.value.trim().isNotEmpty);
+        await (update(documents)..where((d) => d.id.equals(id)))
+            .write(DocumentsCompanion(hasText: Value(hasText)));
+      });
+
+  /// For a search [term], the first page text of each matching document,
+  /// live. Used to show where in the text a search hit was found.
+  Stream<Map<String, String>> watchTextMatches(String term) {
+    final t = term.trim();
+    if (t.isEmpty) return Stream.value(const {});
+    final query = select(pageTexts)
+      ..where((p) => p.content.lower().like(_likePattern(t), escapeChar: r'\'))
+      ..orderBy([(p) => OrderingTerm.asc(p.documentId), (p) => OrderingTerm.asc(p.pageIndex)]);
+    return query.watch().map((rows) {
+      final out = <String, String>{};
+      for (final r in rows) {
+        out.putIfAbsent(r.documentId, () => r.content);
+      }
+      return out;
+    });
+  }
 
   // Folders -----------------------------------------------------------------
 

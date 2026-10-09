@@ -4,8 +4,10 @@ import 'dart:isolate';
 import 'package:banglascanner/core/models/enums.dart';
 import 'package:banglascanner/core/storage/app_database.dart';
 import 'package:banglascanner/core/storage/app_paths.dart';
+import 'package:banglascanner/core/utils/app_exception.dart';
 import 'package:banglascanner/features/export/data/export_service.dart';
 import 'package:banglascanner/features/library/data/document_repository.dart';
+import 'package:banglascanner/features/export/data/pdf_builder.dart';
 import 'package:banglascanner/features/scan/data/draft_document.dart';
 import 'package:drift/drift.dart' show driftRuntimeOptions;
 import 'package:drift/native.dart';
@@ -13,6 +15,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart' as p;
 
 import '../helpers.dart';
+import '../ocr/fake_engine.dart';
+import 'pdf_text_layer_test.dart' show inflatedStreams;
 
 void main() {
   late Directory root;
@@ -27,8 +31,8 @@ void main() {
     root = await Directory.systemTemp.createTemp('bs_test');
     paths = AppPaths(Directory(p.join(root.path, 'docs'))..createSync(), Directory(p.join(root.path, 'tmp'))..createSync());
     db = AppDatabase(NativeDatabase.memory());
-    repo = DocumentRepository(db, paths);
-    service = ExportService(repo, paths);
+    repo = DocumentRepository(db, paths, loadFont: () => File(TextLayerFont.asset).readAsBytes());
+    service = ExportService(repo, paths, ocrEngine: FakeOcrEngine());
   });
 
   tearDown(() async {
@@ -120,6 +124,72 @@ void main() {
     expect(await db.watchDocuments().first, isEmpty);
     final leftovers = paths.libraryDir.existsSync() ? paths.libraryDir.listSync() : const [];
     expect(leftovers, isEmpty);
+  });
+
+  test('searchable PDF: text is recognized, stored, searchable and drawn into the PDF', () async {
+    final ocrProgress = <(int, int)>[];
+    final doc = await service.save(
+      draft: await draftWith(2),
+      name: 'Shop',
+      format: SaveFormat.pdf,
+      quality: ExportQuality.low,
+      ocrLanguage: OcrLanguage.both,
+      onOcrProgress: (d, t) => ocrProgress.add((d, t)),
+    );
+    expect(ocrProgress.first, (0, 2));
+    expect(ocrProgress.last, (2, 2));
+    expect(doc.hasText, isTrue);
+
+    final texts = await repo.pageTextsOf(doc);
+    expect(texts.length, 2);
+    expect(texts[1]!.text, 'Invoice 2\nমোট টাকা ৫০০');
+    expect(texts[1]!.words.single.text, 'Invoice');
+    expect((await db.pageTextsOf(doc.id)).map((r) => r.language), everyElement(OcrLanguage.both));
+
+    // The PDF carries the words invisibly.
+    final pdf = repo.pdfOf(doc).readAsBytesSync();
+    expect(RegExp(r'\b3 Tr\b').allMatches(inflatedStreams(pdf)).length, 2);
+
+    // Found by a word inside, not only by name; with an excerpt.
+    expect((await repo.watchAll(search: 'টাকা').first).map((d) => d.id), [doc.id]);
+    expect((await repo.watchAll(search: 'invoice 2').first).map((d) => d.id), [doc.id]);
+    expect(await repo.watchAll(search: 'nothing').first, isEmpty);
+    final matches = await repo.watchTextMatches('টাকা').first;
+    expect(DocumentRepository.textSnippet(matches[doc.id]!, 'টাকা'), 'Invoice 1 মোট টাকা ৫০০');
+    expect(DocumentRepository.textSnippet('${'a' * 100} needle ${'b' * 100}', 'needle', radius: 4), '…aaa needle bbb…');
+
+    // Re-saving the edited document without OCR drops the stale text.
+    final again = await service.save(
+      draft: await draftWith(1, existingId: doc.id),
+      name: 'Shop',
+      format: SaveFormat.pdf,
+      quality: ExportQuality.low,
+    );
+    expect(again.hasText, isFalse);
+    expect(await db.pageTextsOf(doc.id), isEmpty);
+    expect(await repo.watchAll(search: 'টাকা').first, isEmpty);
+  });
+
+  test('deleting a document removes its text', () async {
+    final doc = await service.save(
+      draft: await draftWith(1),
+      name: 'Gone',
+      format: SaveFormat.jpeg,
+      quality: ExportQuality.low,
+      ocrLanguage: OcrLanguage.english,
+    );
+    expect(await db.pageTextsOf(doc.id), hasLength(1));
+    await repo.delete(doc);
+    expect(await db.pageTextsOf(doc.id), isEmpty);
+  });
+
+  test('saving with OCR but no engine fails cleanly', () async {
+    final noEngine = ExportService(repo, paths);
+    await expectLater(
+      noEngine.save(draft: await draftWith(1), name: 'X', format: SaveFormat.pdf, quality: ExportQuality.low, ocrLanguage: OcrLanguage.bangla),
+      throwsA(isA<AppException>()),
+    );
+    expect(await db.watchDocuments().first, isEmpty);
   });
 
   test('search, sort, rename and delete', () async {

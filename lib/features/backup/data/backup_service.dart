@@ -15,6 +15,7 @@ import '../../../core/storage/storage_providers.dart';
 import '../../../core/utils/app_exception.dart';
 import '../../../core/widgets/progress_dialog.dart';
 import '../../library/data/document_repository.dart';
+import '../../ocr/data/ocr_result.dart';
 import 'backup_manifest.dart';
 
 /// Outcome of a restore.
@@ -69,6 +70,7 @@ class BackupService {
         entries.add(_ZipEntry(f.path, '$zipFolder/${p.posix.joinAll(p.split(rel))}'));
         docOfEntry.add(included.length);
       }
+      final texts = await _db.pageTextsOf(doc.id);
       included.add(
         BackupDocument(
           id: doc.id,
@@ -81,6 +83,14 @@ class BackupService {
           isFavorite: doc.isFavorite,
           folderId: doc.folderId,
           isProtected: doc.isProtected,
+          texts: [
+            for (final t in texts)
+              BackupPageText(
+                pageIndex: t.pageIndex,
+                text: PageText(text: t.content, words: PageText.wordsFromJson(t.words)),
+                language: t.language,
+              ),
+          ],
         ),
       );
     }
@@ -184,6 +194,19 @@ class BackupService {
             isProtected: Value(doc.isProtected),
           ),
         );
+        if (doc.texts.isNotEmpty) {
+          await _db.setPageTexts(doc.id, [
+            for (final t in doc.texts)
+              if (t.pageIndex >= 0 && t.pageIndex < doc.pageCount)
+                PageTextsCompanion.insert(
+                  documentId: doc.id,
+                  pageIndex: t.pageIndex,
+                  content: t.text.text,
+                  words: Value(t.text.wordsJson),
+                  language: t.language,
+                ),
+          ]);
+        }
         added++;
         onProgress?.call(i + 1, total);
       }

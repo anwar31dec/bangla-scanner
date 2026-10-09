@@ -136,6 +136,21 @@ class $DocumentsTable extends Documents
     ),
     defaultValue: const Constant(false),
   );
+  static const VerificationMeta _hasTextMeta = const VerificationMeta(
+    'hasText',
+  );
+  @override
+  late final GeneratedColumn<bool> hasText = GeneratedColumn<bool>(
+    'has_text',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("has_text" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -149,6 +164,7 @@ class $DocumentsTable extends Documents
     isFavorite,
     folderId,
     isProtected,
+    hasText,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -236,6 +252,12 @@ class $DocumentsTable extends Documents
         ),
       );
     }
+    if (data.containsKey('has_text')) {
+      context.handle(
+        _hasTextMeta,
+        hasText.isAcceptableOrUnknown(data['has_text']!, _hasTextMeta),
+      );
+    }
     return context;
   }
 
@@ -291,6 +313,10 @@ class $DocumentsTable extends Documents
         DriftSqlType.bool,
         data['${effectivePrefix}is_protected'],
       )!,
+      hasText: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}has_text'],
+      )!,
     );
   }
 
@@ -326,6 +352,10 @@ class DocumentRow extends DataClass implements Insertable<DocumentRow> {
   /// True when the PDF was saved with an open password. The password itself
   /// is never stored.
   final bool isProtected;
+
+  /// True when OCR text is stored for the document (see [PageTexts]), so the
+  /// library search looks inside it and a PDF carries a text layer.
+  final bool hasText;
   const DocumentRow({
     required this.id,
     required this.name,
@@ -338,6 +368,7 @@ class DocumentRow extends DataClass implements Insertable<DocumentRow> {
     required this.isFavorite,
     this.folderId,
     required this.isProtected,
+    required this.hasText,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -359,6 +390,7 @@ class DocumentRow extends DataClass implements Insertable<DocumentRow> {
       map['folder_id'] = Variable<String>(folderId);
     }
     map['is_protected'] = Variable<bool>(isProtected);
+    map['has_text'] = Variable<bool>(hasText);
     return map;
   }
 
@@ -377,6 +409,7 @@ class DocumentRow extends DataClass implements Insertable<DocumentRow> {
           ? const Value.absent()
           : Value(folderId),
       isProtected: Value(isProtected),
+      hasText: Value(hasText),
     );
   }
 
@@ -399,6 +432,7 @@ class DocumentRow extends DataClass implements Insertable<DocumentRow> {
       isFavorite: serializer.fromJson<bool>(json['isFavorite']),
       folderId: serializer.fromJson<String?>(json['folderId']),
       isProtected: serializer.fromJson<bool>(json['isProtected']),
+      hasText: serializer.fromJson<bool>(json['hasText']),
     );
   }
   @override
@@ -418,6 +452,7 @@ class DocumentRow extends DataClass implements Insertable<DocumentRow> {
       'isFavorite': serializer.toJson<bool>(isFavorite),
       'folderId': serializer.toJson<String?>(folderId),
       'isProtected': serializer.toJson<bool>(isProtected),
+      'hasText': serializer.toJson<bool>(hasText),
     };
   }
 
@@ -433,6 +468,7 @@ class DocumentRow extends DataClass implements Insertable<DocumentRow> {
     bool? isFavorite,
     Value<String?> folderId = const Value.absent(),
     bool? isProtected,
+    bool? hasText,
   }) => DocumentRow(
     id: id ?? this.id,
     name: name ?? this.name,
@@ -445,6 +481,7 @@ class DocumentRow extends DataClass implements Insertable<DocumentRow> {
     isFavorite: isFavorite ?? this.isFavorite,
     folderId: folderId.present ? folderId.value : this.folderId,
     isProtected: isProtected ?? this.isProtected,
+    hasText: hasText ?? this.hasText,
   );
   DocumentRow copyWithCompanion(DocumentsCompanion data) {
     return DocumentRow(
@@ -463,6 +500,7 @@ class DocumentRow extends DataClass implements Insertable<DocumentRow> {
       isProtected: data.isProtected.present
           ? data.isProtected.value
           : this.isProtected,
+      hasText: data.hasText.present ? data.hasText.value : this.hasText,
     );
   }
 
@@ -479,7 +517,8 @@ class DocumentRow extends DataClass implements Insertable<DocumentRow> {
           ..write('updatedAt: $updatedAt, ')
           ..write('isFavorite: $isFavorite, ')
           ..write('folderId: $folderId, ')
-          ..write('isProtected: $isProtected')
+          ..write('isProtected: $isProtected, ')
+          ..write('hasText: $hasText')
           ..write(')'))
         .toString();
   }
@@ -497,6 +536,7 @@ class DocumentRow extends DataClass implements Insertable<DocumentRow> {
     isFavorite,
     folderId,
     isProtected,
+    hasText,
   );
   @override
   bool operator ==(Object other) =>
@@ -512,7 +552,8 @@ class DocumentRow extends DataClass implements Insertable<DocumentRow> {
           other.updatedAt == this.updatedAt &&
           other.isFavorite == this.isFavorite &&
           other.folderId == this.folderId &&
-          other.isProtected == this.isProtected);
+          other.isProtected == this.isProtected &&
+          other.hasText == this.hasText);
 }
 
 class DocumentsCompanion extends UpdateCompanion<DocumentRow> {
@@ -527,6 +568,7 @@ class DocumentsCompanion extends UpdateCompanion<DocumentRow> {
   final Value<bool> isFavorite;
   final Value<String?> folderId;
   final Value<bool> isProtected;
+  final Value<bool> hasText;
   final Value<int> rowid;
   const DocumentsCompanion({
     this.id = const Value.absent(),
@@ -540,6 +582,7 @@ class DocumentsCompanion extends UpdateCompanion<DocumentRow> {
     this.isFavorite = const Value.absent(),
     this.folderId = const Value.absent(),
     this.isProtected = const Value.absent(),
+    this.hasText = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   DocumentsCompanion.insert({
@@ -554,6 +597,7 @@ class DocumentsCompanion extends UpdateCompanion<DocumentRow> {
     this.isFavorite = const Value.absent(),
     this.folderId = const Value.absent(),
     this.isProtected = const Value.absent(),
+    this.hasText = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        name = Value(name),
@@ -575,6 +619,7 @@ class DocumentsCompanion extends UpdateCompanion<DocumentRow> {
     Expression<bool>? isFavorite,
     Expression<String>? folderId,
     Expression<bool>? isProtected,
+    Expression<bool>? hasText,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -589,6 +634,7 @@ class DocumentsCompanion extends UpdateCompanion<DocumentRow> {
       if (isFavorite != null) 'is_favorite': isFavorite,
       if (folderId != null) 'folder_id': folderId,
       if (isProtected != null) 'is_protected': isProtected,
+      if (hasText != null) 'has_text': hasText,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -605,6 +651,7 @@ class DocumentsCompanion extends UpdateCompanion<DocumentRow> {
     Value<bool>? isFavorite,
     Value<String?>? folderId,
     Value<bool>? isProtected,
+    Value<bool>? hasText,
     Value<int>? rowid,
   }) {
     return DocumentsCompanion(
@@ -619,6 +666,7 @@ class DocumentsCompanion extends UpdateCompanion<DocumentRow> {
       isFavorite: isFavorite ?? this.isFavorite,
       folderId: folderId ?? this.folderId,
       isProtected: isProtected ?? this.isProtected,
+      hasText: hasText ?? this.hasText,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -661,6 +709,9 @@ class DocumentsCompanion extends UpdateCompanion<DocumentRow> {
     if (isProtected.present) {
       map['is_protected'] = Variable<bool>(isProtected.value);
     }
+    if (hasText.present) {
+      map['has_text'] = Variable<bool>(hasText.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -681,6 +732,7 @@ class DocumentsCompanion extends UpdateCompanion<DocumentRow> {
           ..write('isFavorite: $isFavorite, ')
           ..write('folderId: $folderId, ')
           ..write('isProtected: $isProtected, ')
+          ..write('hasText: $hasText, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -949,16 +1001,396 @@ class FoldersCompanion extends UpdateCompanion<FolderRow> {
   }
 }
 
+class $PageTextsTable extends PageTexts
+    with TableInfo<$PageTextsTable, PageTextRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $PageTextsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _documentIdMeta = const VerificationMeta(
+    'documentId',
+  );
+  @override
+  late final GeneratedColumn<String> documentId = GeneratedColumn<String>(
+    'document_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _pageIndexMeta = const VerificationMeta(
+    'pageIndex',
+  );
+  @override
+  late final GeneratedColumn<int> pageIndex = GeneratedColumn<int>(
+    'page_index',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _contentMeta = const VerificationMeta(
+    'content',
+  );
+  @override
+  late final GeneratedColumn<String> content = GeneratedColumn<String>(
+    'content',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _wordsMeta = const VerificationMeta('words');
+  @override
+  late final GeneratedColumn<String> words = GeneratedColumn<String>(
+    'words',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('[]'),
+  );
+  @override
+  late final GeneratedColumnWithTypeConverter<OcrLanguage, String> language =
+      GeneratedColumn<String>(
+        'language',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: true,
+      ).withConverter<OcrLanguage>($PageTextsTable.$converterlanguage);
+  @override
+  List<GeneratedColumn> get $columns => [
+    documentId,
+    pageIndex,
+    content,
+    words,
+    language,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'page_texts';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<PageTextRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('document_id')) {
+      context.handle(
+        _documentIdMeta,
+        documentId.isAcceptableOrUnknown(data['document_id']!, _documentIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_documentIdMeta);
+    }
+    if (data.containsKey('page_index')) {
+      context.handle(
+        _pageIndexMeta,
+        pageIndex.isAcceptableOrUnknown(data['page_index']!, _pageIndexMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_pageIndexMeta);
+    }
+    if (data.containsKey('content')) {
+      context.handle(
+        _contentMeta,
+        content.isAcceptableOrUnknown(data['content']!, _contentMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_contentMeta);
+    }
+    if (data.containsKey('words')) {
+      context.handle(
+        _wordsMeta,
+        words.isAcceptableOrUnknown(data['words']!, _wordsMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {documentId, pageIndex};
+  @override
+  PageTextRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return PageTextRow(
+      documentId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}document_id'],
+      )!,
+      pageIndex: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}page_index'],
+      )!,
+      content: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}content'],
+      )!,
+      words: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}words'],
+      )!,
+      language: $PageTextsTable.$converterlanguage.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}language'],
+        )!,
+      ),
+    );
+  }
+
+  @override
+  $PageTextsTable createAlias(String alias) {
+    return $PageTextsTable(attachedDatabase, alias);
+  }
+
+  static JsonTypeConverter2<OcrLanguage, String, String> $converterlanguage =
+      const EnumNameConverter<OcrLanguage>(OcrLanguage.values);
+}
+
+class PageTextRow extends DataClass implements Insertable<PageTextRow> {
+  final String documentId;
+
+  /// 0-based page number.
+  final int pageIndex;
+  final String content;
+
+  /// JSON list of `[word, left, top, right, bottom]` (fractions of the page).
+  final String words;
+  final OcrLanguage language;
+  const PageTextRow({
+    required this.documentId,
+    required this.pageIndex,
+    required this.content,
+    required this.words,
+    required this.language,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['document_id'] = Variable<String>(documentId);
+    map['page_index'] = Variable<int>(pageIndex);
+    map['content'] = Variable<String>(content);
+    map['words'] = Variable<String>(words);
+    {
+      map['language'] = Variable<String>(
+        $PageTextsTable.$converterlanguage.toSql(language),
+      );
+    }
+    return map;
+  }
+
+  PageTextsCompanion toCompanion(bool nullToAbsent) {
+    return PageTextsCompanion(
+      documentId: Value(documentId),
+      pageIndex: Value(pageIndex),
+      content: Value(content),
+      words: Value(words),
+      language: Value(language),
+    );
+  }
+
+  factory PageTextRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return PageTextRow(
+      documentId: serializer.fromJson<String>(json['documentId']),
+      pageIndex: serializer.fromJson<int>(json['pageIndex']),
+      content: serializer.fromJson<String>(json['content']),
+      words: serializer.fromJson<String>(json['words']),
+      language: $PageTextsTable.$converterlanguage.fromJson(
+        serializer.fromJson<String>(json['language']),
+      ),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'documentId': serializer.toJson<String>(documentId),
+      'pageIndex': serializer.toJson<int>(pageIndex),
+      'content': serializer.toJson<String>(content),
+      'words': serializer.toJson<String>(words),
+      'language': serializer.toJson<String>(
+        $PageTextsTable.$converterlanguage.toJson(language),
+      ),
+    };
+  }
+
+  PageTextRow copyWith({
+    String? documentId,
+    int? pageIndex,
+    String? content,
+    String? words,
+    OcrLanguage? language,
+  }) => PageTextRow(
+    documentId: documentId ?? this.documentId,
+    pageIndex: pageIndex ?? this.pageIndex,
+    content: content ?? this.content,
+    words: words ?? this.words,
+    language: language ?? this.language,
+  );
+  PageTextRow copyWithCompanion(PageTextsCompanion data) {
+    return PageTextRow(
+      documentId: data.documentId.present
+          ? data.documentId.value
+          : this.documentId,
+      pageIndex: data.pageIndex.present ? data.pageIndex.value : this.pageIndex,
+      content: data.content.present ? data.content.value : this.content,
+      words: data.words.present ? data.words.value : this.words,
+      language: data.language.present ? data.language.value : this.language,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PageTextRow(')
+          ..write('documentId: $documentId, ')
+          ..write('pageIndex: $pageIndex, ')
+          ..write('content: $content, ')
+          ..write('words: $words, ')
+          ..write('language: $language')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(documentId, pageIndex, content, words, language);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is PageTextRow &&
+          other.documentId == this.documentId &&
+          other.pageIndex == this.pageIndex &&
+          other.content == this.content &&
+          other.words == this.words &&
+          other.language == this.language);
+}
+
+class PageTextsCompanion extends UpdateCompanion<PageTextRow> {
+  final Value<String> documentId;
+  final Value<int> pageIndex;
+  final Value<String> content;
+  final Value<String> words;
+  final Value<OcrLanguage> language;
+  final Value<int> rowid;
+  const PageTextsCompanion({
+    this.documentId = const Value.absent(),
+    this.pageIndex = const Value.absent(),
+    this.content = const Value.absent(),
+    this.words = const Value.absent(),
+    this.language = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  PageTextsCompanion.insert({
+    required String documentId,
+    required int pageIndex,
+    required String content,
+    this.words = const Value.absent(),
+    required OcrLanguage language,
+    this.rowid = const Value.absent(),
+  }) : documentId = Value(documentId),
+       pageIndex = Value(pageIndex),
+       content = Value(content),
+       language = Value(language);
+  static Insertable<PageTextRow> custom({
+    Expression<String>? documentId,
+    Expression<int>? pageIndex,
+    Expression<String>? content,
+    Expression<String>? words,
+    Expression<String>? language,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (documentId != null) 'document_id': documentId,
+      if (pageIndex != null) 'page_index': pageIndex,
+      if (content != null) 'content': content,
+      if (words != null) 'words': words,
+      if (language != null) 'language': language,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  PageTextsCompanion copyWith({
+    Value<String>? documentId,
+    Value<int>? pageIndex,
+    Value<String>? content,
+    Value<String>? words,
+    Value<OcrLanguage>? language,
+    Value<int>? rowid,
+  }) {
+    return PageTextsCompanion(
+      documentId: documentId ?? this.documentId,
+      pageIndex: pageIndex ?? this.pageIndex,
+      content: content ?? this.content,
+      words: words ?? this.words,
+      language: language ?? this.language,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (documentId.present) {
+      map['document_id'] = Variable<String>(documentId.value);
+    }
+    if (pageIndex.present) {
+      map['page_index'] = Variable<int>(pageIndex.value);
+    }
+    if (content.present) {
+      map['content'] = Variable<String>(content.value);
+    }
+    if (words.present) {
+      map['words'] = Variable<String>(words.value);
+    }
+    if (language.present) {
+      map['language'] = Variable<String>(
+        $PageTextsTable.$converterlanguage.toSql(language.value),
+      );
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PageTextsCompanion(')
+          ..write('documentId: $documentId, ')
+          ..write('pageIndex: $pageIndex, ')
+          ..write('content: $content, ')
+          ..write('words: $words, ')
+          ..write('language: $language, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
   late final $DocumentsTable documents = $DocumentsTable(this);
   late final $FoldersTable folders = $FoldersTable(this);
+  late final $PageTextsTable pageTexts = $PageTextsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
-  List<DatabaseSchemaEntity> get allSchemaEntities => [documents, folders];
+  List<DatabaseSchemaEntity> get allSchemaEntities => [
+    documents,
+    folders,
+    pageTexts,
+  ];
 }
 
 typedef $$DocumentsTableCreateCompanionBuilder =
@@ -974,6 +1406,7 @@ typedef $$DocumentsTableCreateCompanionBuilder =
       Value<bool> isFavorite,
       Value<String?> folderId,
       Value<bool> isProtected,
+      Value<bool> hasText,
       Value<int> rowid,
     });
 typedef $$DocumentsTableUpdateCompanionBuilder =
@@ -989,6 +1422,7 @@ typedef $$DocumentsTableUpdateCompanionBuilder =
       Value<bool> isFavorite,
       Value<String?> folderId,
       Value<bool> isProtected,
+      Value<bool> hasText,
       Value<int> rowid,
     });
 
@@ -1056,6 +1490,11 @@ class $$DocumentsTableFilterComposer
     column: $table.isProtected,
     builder: (column) => ColumnFilters(column),
   );
+
+  ColumnFilters<bool> get hasText => $composableBuilder(
+    column: $table.hasText,
+    builder: (column) => ColumnFilters(column),
+  );
 }
 
 class $$DocumentsTableOrderingComposer
@@ -1121,6 +1560,11 @@ class $$DocumentsTableOrderingComposer
     column: $table.isProtected,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<bool> get hasText => $composableBuilder(
+    column: $table.hasText,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$DocumentsTableAnnotationComposer
@@ -1168,6 +1612,9 @@ class $$DocumentsTableAnnotationComposer
     column: $table.isProtected,
     builder: (column) => column,
   );
+
+  GeneratedColumn<bool> get hasText =>
+      $composableBuilder(column: $table.hasText, builder: (column) => column);
 }
 
 class $$DocumentsTableTableManager
@@ -1212,6 +1659,7 @@ class $$DocumentsTableTableManager
                 Value<bool> isFavorite = const Value.absent(),
                 Value<String?> folderId = const Value.absent(),
                 Value<bool> isProtected = const Value.absent(),
+                Value<bool> hasText = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => DocumentsCompanion(
                 id: id,
@@ -1225,6 +1673,7 @@ class $$DocumentsTableTableManager
                 isFavorite: isFavorite,
                 folderId: folderId,
                 isProtected: isProtected,
+                hasText: hasText,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -1240,6 +1689,7 @@ class $$DocumentsTableTableManager
                 Value<bool> isFavorite = const Value.absent(),
                 Value<String?> folderId = const Value.absent(),
                 Value<bool> isProtected = const Value.absent(),
+                Value<bool> hasText = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => DocumentsCompanion.insert(
                 id: id,
@@ -1253,6 +1703,7 @@ class $$DocumentsTableTableManager
                 isFavorite: isFavorite,
                 folderId: folderId,
                 isProtected: isProtected,
+                hasText: hasText,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
@@ -1454,6 +1905,218 @@ typedef $$FoldersTableProcessedTableManager =
       FolderRow,
       PrefetchHooks Function()
     >;
+typedef $$PageTextsTableCreateCompanionBuilder =
+    PageTextsCompanion Function({
+      required String documentId,
+      required int pageIndex,
+      required String content,
+      Value<String> words,
+      required OcrLanguage language,
+      Value<int> rowid,
+    });
+typedef $$PageTextsTableUpdateCompanionBuilder =
+    PageTextsCompanion Function({
+      Value<String> documentId,
+      Value<int> pageIndex,
+      Value<String> content,
+      Value<String> words,
+      Value<OcrLanguage> language,
+      Value<int> rowid,
+    });
+
+class $$PageTextsTableFilterComposer
+    extends Composer<_$AppDatabase, $PageTextsTable> {
+  $$PageTextsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get documentId => $composableBuilder(
+    column: $table.documentId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get pageIndex => $composableBuilder(
+    column: $table.pageIndex,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get content => $composableBuilder(
+    column: $table.content,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get words => $composableBuilder(
+    column: $table.words,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnWithTypeConverterFilters<OcrLanguage, OcrLanguage, String>
+  get language => $composableBuilder(
+    column: $table.language,
+    builder: (column) => ColumnWithTypeConverterFilters(column),
+  );
+}
+
+class $$PageTextsTableOrderingComposer
+    extends Composer<_$AppDatabase, $PageTextsTable> {
+  $$PageTextsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get documentId => $composableBuilder(
+    column: $table.documentId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get pageIndex => $composableBuilder(
+    column: $table.pageIndex,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get content => $composableBuilder(
+    column: $table.content,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get words => $composableBuilder(
+    column: $table.words,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get language => $composableBuilder(
+    column: $table.language,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$PageTextsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $PageTextsTable> {
+  $$PageTextsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get documentId => $composableBuilder(
+    column: $table.documentId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get pageIndex =>
+      $composableBuilder(column: $table.pageIndex, builder: (column) => column);
+
+  GeneratedColumn<String> get content =>
+      $composableBuilder(column: $table.content, builder: (column) => column);
+
+  GeneratedColumn<String> get words =>
+      $composableBuilder(column: $table.words, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<OcrLanguage, String> get language =>
+      $composableBuilder(column: $table.language, builder: (column) => column);
+}
+
+class $$PageTextsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $PageTextsTable,
+          PageTextRow,
+          $$PageTextsTableFilterComposer,
+          $$PageTextsTableOrderingComposer,
+          $$PageTextsTableAnnotationComposer,
+          $$PageTextsTableCreateCompanionBuilder,
+          $$PageTextsTableUpdateCompanionBuilder,
+          (
+            PageTextRow,
+            BaseReferences<_$AppDatabase, $PageTextsTable, PageTextRow>,
+          ),
+          PageTextRow,
+          PrefetchHooks Function()
+        > {
+  $$PageTextsTableTableManager(_$AppDatabase db, $PageTextsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$PageTextsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$PageTextsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$PageTextsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> documentId = const Value.absent(),
+                Value<int> pageIndex = const Value.absent(),
+                Value<String> content = const Value.absent(),
+                Value<String> words = const Value.absent(),
+                Value<OcrLanguage> language = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => PageTextsCompanion(
+                documentId: documentId,
+                pageIndex: pageIndex,
+                content: content,
+                words: words,
+                language: language,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String documentId,
+                required int pageIndex,
+                required String content,
+                Value<String> words = const Value.absent(),
+                required OcrLanguage language,
+                Value<int> rowid = const Value.absent(),
+              }) => PageTextsCompanion.insert(
+                documentId: documentId,
+                pageIndex: pageIndex,
+                content: content,
+                words: words,
+                language: language,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$PageTextsTable, PageTextRow>(table),
+                  BaseReferences<_$AppDatabase, $PageTextsTable, PageTextRow>(
+                    db,
+                    table,
+                    e,
+                  ),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$PageTextsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $PageTextsTable,
+      PageTextRow,
+      $$PageTextsTableFilterComposer,
+      $$PageTextsTableOrderingComposer,
+      $$PageTextsTableAnnotationComposer,
+      $$PageTextsTableCreateCompanionBuilder,
+      $$PageTextsTableUpdateCompanionBuilder,
+      (
+        PageTextRow,
+        BaseReferences<_$AppDatabase, $PageTextsTable, PageTextRow>,
+      ),
+      PageTextRow,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -1462,4 +2125,6 @@ class $AppDatabaseManager {
       $$DocumentsTableTableManager(_db, _db.documents);
   $$FoldersTableTableManager get folders =>
       $$FoldersTableTableManager(_db, _db.folders);
+  $$PageTextsTableTableManager get pageTexts =>
+      $$PageTextsTableTableManager(_db, _db.pageTexts);
 }
