@@ -7,6 +7,7 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app.dart';
+import 'core/app_info.dart';
 import 'core/storage/app_paths.dart';
 import 'core/storage/startup_cleanup.dart';
 import 'features/settings/application/settings_controller.dart';
@@ -18,6 +19,7 @@ Future<void> main() async {
   // Load preferences before the first frame so the saved language and theme
   // are applied immediately.
   final prefs = await SharedPreferences.getInstance();
+  final appVersion = await loadAppVersion();
   await initializeDateFormatting('bn');
   await initializeDateFormatting('en');
 
@@ -28,7 +30,10 @@ Future<void> main() async {
 
   runApp(
     ProviderScope(
-      overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+      overrides: [
+        sharedPreferencesProvider.overrideWithValue(prefs),
+        appVersionProvider.overrideWithValue(appVersion),
+      ],
       child: const BanglaScannerApp(),
     ),
   );

@@ -7,7 +7,7 @@ import 'package:drift/drift.dart' show Value;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path/path.dart' as p;
 
-import '../../../core/app_info.dart' as app_info;
+import '../../../core/app_info.dart';
 import '../../../core/models/enums.dart';
 import '../../../core/storage/app_database.dart';
 import '../../../core/storage/app_paths.dart';
@@ -356,5 +356,5 @@ class _IsolateError {
 
 final backupServiceProvider = FutureProvider<BackupService>((ref) async {
   final paths = await ref.watch(appPathsProvider.future);
-  return BackupService(ref.watch(appDatabaseProvider), paths, appVersion: app_info.appVersion);
+  return BackupService(ref.watch(appDatabaseProvider), paths, appVersion: ref.watch(appVersionProvider));
 });

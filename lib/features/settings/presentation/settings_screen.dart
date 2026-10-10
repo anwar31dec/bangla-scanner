@@ -212,7 +212,7 @@ class SettingsScreen extends ConsumerWidget {
             child: ListTile(
               leading: const Icon(Icons.info_outline),
               title: Text(l10n.settingsAbout),
-              subtitle: Text('${l10n.settingsOffline}\n${l10n.settingsVersion(appVersion)}'),
+              subtitle: Text('${l10n.settingsOffline}\n${l10n.settingsVersion(ref.watch(appVersionProvider))}'),
               isThreeLine: true,
             ),
           ),
