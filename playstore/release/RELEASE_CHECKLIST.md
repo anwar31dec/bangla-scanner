@@ -1,6 +1,6 @@
 # Google Play release checklist – Bangla Scanner
 
-Package `com.codeinherit.banglascanner` · version 1.2.2 (versionCode 7) · minSdk 24 · targetSdk 36
+Package `com.codeinherit.banglascanner` · version 1.0.9 (versionCode 9) · minSdk 24 · targetSdk 36
 
 ## 0. One-time account setup
 
@@ -21,7 +21,7 @@ flutter build appbundle --release --flavor prod
 ```
 
 - [ ] `android/key.properties` and `android/app/bangla-scanner-release.jks` are present (they are git-ignored) so the bundle is signed with the upload key. Back both up somewhere safe; losing the key means you cannot update the app unless Play App Signing key reset is granted.
-- [ ] Bump `version:` in `pubspec.yaml` for every upload (versionCode must increase: `1.2.2+7` → `1.2.3+8`). The release script does this automatically for App Distribution builds; for Play do it by hand or run `./release_script.sh prod` first.
+- [ ] Bump `version:` in `pubspec.yaml` for every upload (versionCode must increase: `1.0.9+9` → `1.0.10+10`). The release script does this automatically for App Distribution builds; for Play do it by hand or run `./release_script.sh prod` first.
 - [ ] Choose **Play App Signing** on the first upload (recommended, default). Google holds the app signing key; your `.jks` becomes the upload key.
 - [ ] Optional sanity check of the bundle on the device: `bundletool build-apks --bundle=... --output=app.apks --connected-device` then `bundletool install-apks --apks=app.apks`.
 
@@ -74,7 +74,7 @@ To update the policy later: edit `privacy-policy.html` in the `bangla-scanner-do
 
 - [ ] **Internal testing** (up to 100 testers, instant): upload `app-prod-release.aab`, add tester e-mails, share the opt-in link. Good for a last check of the real Play-signed build (Play App Signing re-signs it, so verify the scanner and biometrics still work).
 - [ ] **Closed testing** (required 14-day / 12-tester period for new personal accounts): create a track, upload the same bundle, add the testers, publish, and keep it running for 14 days with testers opted in.
-- [ ] Release notes: paste `release_notes_1.2.2.txt` (first-release summary; both language blocks are under the 500-char limit).
+- [ ] Release notes: paste `release_notes_1.0.9.txt` (first-release summary; both language blocks are under the 500-char limit).
 - [ ] After the test period: **Apply for production access** in the Dashboard and answer the questionnaire (what you tested, feedback received, how the app is ready).
 
 ## 6. Production
