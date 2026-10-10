@@ -1,5 +1,7 @@
 # Play Console → App content → Data safety: answers
 
+**Fastest route:** in Play Console open App content → Data safety → *Import from CSV* and upload `data_safety_bangla_scanner.csv` from this folder. It is the Play export template with every answer below filled in. Review the preview, then Save and Submit. The tables below are the same answers for checking by hand.
+
 These answers reflect the code as of version 1.2.2 (Android build includes Firebase Crashlytics and Firebase Analytics; everything else is offline). Re-check them whenever an SDK is added.
 
 ## Overview questions

@@ -62,7 +62,7 @@ Every item must be completed before a production release can be rolled out.
 | Content ratings | `../policy/content_rating_questionnaire.md` |
 | Target audience | 18+ (or 13+), not for children |
 | News apps | No |
-| Data safety | `../policy/data_safety_form.md` |
+| Data safety | Import `../policy/data_safety_bangla_scanner.csv` (Data safety → Import from CSV); details in `../policy/data_safety_form.md` |
 | Government apps | No |
 | Financial features | None |
 | Health | None |

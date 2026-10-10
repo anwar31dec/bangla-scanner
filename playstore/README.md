@@ -16,6 +16,7 @@ playstore/
 │   ├── privacy_policy.md          source text
 │   ├── privacy_policy.html        published at https://anwar31dec.github.io/bangla-scanner-docs/privacy-policy.html
 │   ├── data_safety_form.md        answers for the Data safety questionnaire
+│   ├── data_safety_bangla_scanner.csv   same answers in Play's CSV format → Data safety → Import from CSV
 │   └── content_rating_questionnaire.md   IARC answers + all other "App content" declarations
 └── graphics/
     ├── app_icon_512.png           store icon, 512×512 PNG, full name on the page (rendered from tool/icon/icon.svg)
