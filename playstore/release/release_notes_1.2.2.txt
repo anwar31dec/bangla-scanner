@@ -1,0 +1,26 @@
+<en-US>
+First release – offline document scanner for Bengali speakers.
+• Scan with auto edge detection, Flash Scan, multi-page
+• Import photos or PDF pages
+• Crop, rotate, reorder, book split, filters
+• Signature, date & rubber stamps
+• Save as PDF/JPEG, A4/Letter/Legal, PDF password
+• Bangla & English OCR, 100% offline; searchable PDF
+• ID card & passport on A4 at real size
+• Library: folders, favourites, search, merge
+• App lock (PIN/fingerprint), backup & restore
+• Bangla & English UI
+</en-US>
+<bn-BD>
+বাংলা স্ক্যানারের প্রথম সংস্করণ – বাংলাভাষীদের জন্য অফলাইন ডকুমেন্ট স্ক্যানার।
+• অটো কিনারা শনাক্ত করে স্ক্যান, ফ্ল্যাশ স্ক্যান, বহু পাতা
+• ছবি বা PDF-এর পাতা ইমপোর্ট
+• ক্রপ, ঘোরানো, সাজানো, বই ভাগ, ফিল্টার ও সমন্বয়
+• সই, তারিখ ও সিল
+• PDF/JPEG সেভ, A4/Letter/Legal, পাসওয়ার্ড সুরক্ষা
+• বাংলা ও ইংরেজি OCR, ১০০% অফলাইন; সার্চযোগ্য PDF
+• NID ও পাসপোর্ট এক A4 পাতায় আসল মাপে
+• ফোল্ডার, প্রিয়, সার্চ ও মার্জসহ লাইব্রেরি
+• অ্যাপ লক (PIN/আঙুলের ছাপ), ব্যাকআপ ও রিস্টোর
+• বাংলা ও ইংরেজি ইন্টারফেস
+</bn-BD>

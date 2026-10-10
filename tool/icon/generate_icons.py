@@ -1,24 +1,25 @@
 #!/usr/bin/env python3
 """Generates every launcher icon (Android prod + dev flavor, iOS) from one drawing.
 
-Needs `fonttools` and `pillow` (pip) and `rsvg-convert` (brew install librsvg). Run from the
-repo root:
+Needs `pillow` (pip, built with libraqm for Bangla shaping) and `rsvg-convert`
+(brew install librsvg). Run from the repo root:
 
     python3 tool/icon/generate_icons.py
 
-The artwork is a scanned page carrying the Bangla letter "ব" inside viewfinder brackets,
-on the app's seed green (AppTheme.seed). Edit the constants / `artwork()` and re-run.
+The artwork is a scanned page carrying the app name "বাংলা স্ক্যানার" on two lines inside
+viewfinder brackets, on the app's seed green (AppTheme.seed). The name is rendered with
+Pillow (HarfBuzz shaping through libraqm) and embedded in the SVG as a PNG, because
+rsvg-convert cannot shape Bangla text. Edit the constants / `artwork()` and re-run.
 """
+import base64
+import io
 import json
 import subprocess
 import sys
 import tempfile
 from pathlib import Path
 
-from fontTools.pens.boundsPen import BoundsPen
-from fontTools.pens.svgPathPen import SVGPathPen
-from fontTools.ttLib import TTFont
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFont
 
 ROOT = Path(__file__).resolve().parents[2]
 FONT = ROOT / "assets/fonts/HindSiliguri-Bold.ttf"
@@ -33,24 +34,23 @@ PAPER = "#FFFFFF"
 FOLD = "#CFE5DD"
 DEV_RED = "#D32F2F"
 
-LETTER = "ব"
+NAME_LINES = (("বাংলা", 176, 372), ("স্ক্যানার", 150, 528))  # text, font size, centre y
 DENSITIES = {"mdpi": 1, "hdpi": 1.5, "xhdpi": 2, "xxhdpi": 3, "xxxhdpi": 4}
+TEXT_SCALE = 2  # the name is rasterised at 2048 px and downsampled by the renderer
 
 
-def letter_path(cx, cy, height):
-    """SVG path for LETTER, scaled to `height` and centred on (cx, cy)."""
-    font = TTFont(FONT)
-    glyphs = font.getGlyphSet()
-    name = font.getBestCmap()[ord(LETTER)]
-    bounds = BoundsPen(glyphs)
-    glyphs[name].draw(bounds)
-    x0, y0, x1, y1 = bounds.bounds
-    pen = SVGPathPen(glyphs)
-    glyphs[name].draw(pen)
-    s = height / (y1 - y0)
-    tx = cx - s * (x0 + x1) / 2
-    ty = cy + s * (y0 + y1) / 2
-    return f'<path transform="translate({tx:.2f} {ty:.2f}) scale({s:.5f} {-s:.5f})" d="{pen.getCommands()}"/>'
+def name_image(color):
+    """The two-line app name as a base64 PNG (transparent background) on a 1024 canvas."""
+    k = TEXT_SCALE
+    img = Image.new("RGBA", (1024 * k, 1024 * k), (0, 0, 0, 0))
+    draw = ImageDraw.Draw(img)
+    for text, size, cy in NAME_LINES:
+        font = ImageFont.truetype(str(FONT), size * k)
+        draw.text((512 * k, cy * k), text, font=font, fill=color, anchor="mm")
+    buf = io.BytesIO()
+    img.save(buf, "PNG", optimize=True)
+    data = base64.b64encode(buf.getvalue()).decode("ascii")
+    return f'<image x="0" y="0" width="1024" height="1024" href="data:image/png;base64,{data}"/>'
 
 
 def brackets(color, width=34):
@@ -66,7 +66,7 @@ def brackets(color, width=34):
 
 
 # Page outline: 380x470 with a folded top-right corner.
-PX0, PY0, PX1, PY1, PR, PFOLD = 322, 277, 702, 747, 34, 88
+PX0, PY0, PX1, PY1, PR, PFOLD = 252, 268, 772, 756, 34, 84
 PAGE = (
     f"M{PX0 + PR} {PY0}H{PX1 - PFOLD}L{PX1} {PY0 + PFOLD}V{PY1 - PR}"
     f"Q{PX1} {PY1} {PX1 - PR} {PY1}H{PX0 + PR}Q{PX0} {PY1} {PX0} {PY1 - PR}"
@@ -76,7 +76,7 @@ FOLD_PATH = (
     f"M{PX1 - PFOLD} {PY0}L{PX1} {PY0 + PFOLD}H{PX1 - PFOLD + 26}"
     f"Q{PX1 - PFOLD} {PY0 + PFOLD} {PX1 - PFOLD} {PY0 + PFOLD - 26}Z"
 )
-SCAN_Y, SCAN_X0, SCAN_X1, SCAN_W = 652, 262, 762, 26
+SCAN_Y, SCAN_X0, SCAN_X1, SCAN_W = 690, 202, 822, 26
 
 
 def artwork():
@@ -94,7 +94,7 @@ def artwork():
   <path d="{PAGE}" fill="{PAPER}"/>
   <path d="{FOLD_PATH}" fill="{FOLD}"/>
   <rect x="{PX0}" y="{SCAN_Y - 112}" width="{PX1 - PX0}" height="112" fill="url(#beam)" clip-path="url(#page)"/>
-  <g fill="{GREEN}">{letter_path(512, 496, 224)}</g>
+  {name_image(GREEN)}
   <path d="M{SCAN_X0} {SCAN_Y}H{SCAN_X1}" stroke="{RED}" stroke-width="{SCAN_W}" stroke-linecap="round"/>
 """
 
@@ -106,7 +106,7 @@ def monochrome():
   <defs>
     <mask id="cut">
       <rect width="1024" height="1024" fill="#fff"/>
-      <g fill="#000">{letter_path(512, 496, 224)}</g>
+      {name_image("#000")}
       <path d="M{SCAN_X0} {SCAN_Y}H{SCAN_X1}" stroke="#000" stroke-width="{gap}" stroke-linecap="round"/>
     </mask>
   </defs>

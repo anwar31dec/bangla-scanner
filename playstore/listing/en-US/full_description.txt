@@ -1,0 +1,53 @@
+Bangla Scanner (বাংলা স্ক্যানার) turns your phone into a fast, private document scanner made for Bengali speakers. Scan papers, ID cards and books, clean them up, sign and stamp them, and save them as PDF or JPEG. Extract Bangla and English text (OCR) without an internet connection. No account, no cloud, no ads.
+
+📷 SCAN IN SECONDS
+• Automatic page detection and crop, multi-page scanning
+• Flash Scan: the flash fires only at the moment of capture, so dark rooms and glossy paper come out clean
+• Live page outline and auto-capture when the page is held still
+• Import photos from the gallery or pages from an existing PDF
+
+✂️ EDIT LIKE A PRO
+• Crop with draggable corners, rotate, reorder and delete pages
+• Book split: cut a photo of an open book into two pages
+• Filters: Original, Auto colour, Grayscale, Black & White, Whiteboard, Light text
+• Adjust filter strength, brightness and contrast
+
+✍️ SIGN & STAMP
+• Draw your signature once and place it on any page: drag, pinch to resize, rotate
+• Date stamp and rubber stamps such as Attested, True copy, Original seen, Paid, Received, or your own text, in blue, red or black
+
+📄 SAVE & SHARE
+• PDF or JPEG, Low / Medium / High quality
+• Page size: fit to scan, A4, Letter or Legal
+• Protect a PDF with an open password (AES-128)
+• Searchable PDF: the recognised text is embedded invisibly, so you can search and select text in any PDF reader
+• Share to WhatsApp, Gmail, Drive or any app; save a copy to Downloads
+
+🔤 BANGLA & ENGLISH OCR, 100% OFFLINE
+• Extract Bangla, English, or both from any scanned page
+• Edit the text, copy it, share it or save it as .txt
+• The library search finds documents by the words inside them
+
+🪪 ID CARD MODE
+• NID / smart card: front and back on one A4 page at real size
+• Passport photo page, ready to print
+
+📚 ORGANISE YOUR DOCUMENTS
+• Library with thumbnails, search, sort and rename
+• Folders and favourites
+• Select several documents to share, move, merge or delete
+• Reorder or remove pages of a saved document
+
+🔒 PRIVATE BY DESIGN
+• Everything stays on your phone: scanning, OCR and PDF creation run on the device
+• App lock with PIN, fingerprint or face unlock
+• Backup your whole library to one .zip file and restore it on a new phone
+
+🌐 MADE FOR BENGALI SPEAKERS
+• Bangla interface by default, English available in Settings
+• Bangla numerals and dates
+• Designed for Bangladesh, West Bengal and Bengalis around the world
+
+Bangla Scanner receives files from other apps too: share a photo or PDF from WhatsApp, Gmail or your file manager and it opens straight in the editor.
+
+Permissions: Camera (to scan), Biometrics (optional app lock). On Android 9 and below, storage access is used only to save copies into Downloads.

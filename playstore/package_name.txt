@@ -1,0 +1,11 @@
+Package name (application ID): com.codeinherit.banglascanner
+
+Version: 1.2.2 (versionCode 7)   ← from pubspec.yaml "version: 1.2.2+7"
+minSdk: 24 (Android 7.0)        targetSdk: 36
+Signing: android/app/bangla-scanner-release.jks (alias banglascanner), config in android/key.properties
+Dev flavour (not for Play): com.codeinherit.banglascanner.dev
+iOS bundle ID: com.codeinherit.banglascanner
+
+Play Console: Create app → the package name is fixed by the first App Bundle you upload and can never be changed.
+Firebase Android app for this package: 1:670275906113:android:b35db59c5d291e399bb4c0 (project bangla-scanner)
+Privacy policy: https://anwar31dec.github.io/bangla-scanner-docs/privacy-policy.html
