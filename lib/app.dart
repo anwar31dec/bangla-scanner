@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -5,16 +7,35 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/l10n/l10n.dart';
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
+import 'core/update/app_update_service.dart';
 import 'features/intents/application/intent_handler.dart';
 import 'features/lock/application/lock_controller.dart';
 import 'features/lock/presentation/lock_screen.dart';
 import 'features/settings/application/settings_controller.dart';
 
-class BanglaScannerApp extends ConsumerWidget {
+class BanglaScannerApp extends ConsumerStatefulWidget {
   const BanglaScannerApp({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<BanglaScannerApp> createState() => _BanglaScannerAppState();
+}
+
+class _BanglaScannerAppState extends ConsumerState<BanglaScannerApp> {
+  @override
+  void initState() {
+    super.initState();
+    // Google Play in-app update (immediate / force flow) on every cold start,
+    // the same as Hisab Master. Runs above the lock gate so a locked app still
+    // gets updated. No-op unless installed from Play, so dev, emulator and
+    // sideloaded builds are never interrupted.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      unawaited(ref.read(appUpdateServiceProvider).checkAndUpdate());
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final settings = ref.watch(settingsProvider);
     final router = ref.watch(routerProvider);
 

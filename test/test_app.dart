@@ -4,6 +4,7 @@ import 'package:banglascanner/app.dart';
 import 'package:banglascanner/core/storage/app_database.dart';
 import 'package:banglascanner/core/storage/app_paths.dart';
 import 'package:banglascanner/core/storage/storage_providers.dart';
+import 'package:banglascanner/core/update/app_update_service.dart';
 import 'package:banglascanner/features/settings/application/settings_controller.dart';
 import 'package:drift/drift.dart' show driftRuntimeOptions;
 import 'package:drift/native.dart';
@@ -28,11 +29,28 @@ Future<(Widget, AppDatabase, AppPaths)> buildTestApp({Map<String, Object> prefs 
       sharedPreferencesProvider.overrideWithValue(instance),
       appDatabaseProvider.overrideWithValue(db),
       appPathsProvider.overrideWith((ref) async => paths),
+      // Play in-app updates need platform channels; keep them out of tests.
+      appUpdateServiceProvider.overrideWithValue(_noUpdates),
     ],
     child: const BanglaScannerApp(),
   );
   return (app, db, paths);
 }
+
+class _NeverUpdateGateway implements InAppUpdateGateway {
+  const _NeverUpdateGateway();
+  @override
+  Future<UpdateCheck> checkForUpdate() async =>
+      const UpdateCheck(availability: UpdateAvailabilityStatus.notAvailable, immediateAllowed: false);
+  @override
+  Future<ImmediateUpdateResult> performImmediateUpdate() async => ImmediateUpdateResult.failed;
+}
+
+final _noUpdates = AppUpdateService(
+  const _NeverUpdateGateway(),
+  isAndroid: false,
+  installerStore: () async => null,
+);
 
 /// Unmounts the app and flushes drift's stream-cleanup timers, which would
 /// otherwise fail the test with "A Timer is still pending".
