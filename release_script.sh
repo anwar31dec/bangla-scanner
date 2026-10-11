@@ -4,6 +4,10 @@
 #   - flavor:   'prod' (default) or 'dev'
 #   - platform: 'apk' (default) or 'appbundle'
 #
+# apk:       builds the flavor and uploads it to Firebase App Distribution.
+# appbundle: Google Play build. Bumps the version, builds the .aab and stops;
+#            nothing is uploaded (Play Console upload is manual).
+#
 # prod: bumps patch + build number in pubspec.yaml (e.g. 1.1.0+34 -> 1.1.1+35),
 #       builds the prod flavor and uploads it to App Distribution.
 # dev:  bumps the patch (last) segment of the pubspec version, leaves the
@@ -108,6 +112,14 @@ cp "$RAW_BUILD_PATH" "$BUILD_PATH"
 echo "📦 Artifact: $BUILD_PATH"
 
 # Step 5: Upload
+if [[ "$PLATFORM" == "appbundle" ]]; then
+  echo "⏭️  App bundle is for Google Play — skipping Firebase upload."
+  echo "✅ $FLAVOR bundle ready. Version: $NEW_VERSION"
+  echo "   Upload in Play Console → Release → (Testing/Production) → Create new release:"
+  echo "   $BUILD_PATH"
+  echo "   Release notes: playstore/release/release_notes_${NEW_VERSION_NAME}.txt"
+  exit 0
+fi
 if [[ -z "$FIREBASE_APP_ID" ]]; then
   echo "⏭️  Skipping Firebase upload (no app id for flavor '$FLAVOR')."
   echo "✅ $FLAVOR build ready. Version: $NEW_VERSION"
